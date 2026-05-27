@@ -154,9 +154,7 @@ python -c "import featuretools; print('Featuretools', featuretools.__version__)"
 python data/sample/generate_sample.py
 
 # Step 2 – run the full pipeline
-python pipeline.py \
-  --input data/sample/customer_churn.csv \
-  --target churn
+python pipeline.py --input data/sample/customer_churn.csv --target churn
 ```
 
 Output appears in `output/<timestamp>/`:
