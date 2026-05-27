@@ -1,0 +1,1910 @@
+validation_pack_name: ecommerce_data_quality_rules
+version: 2.2.0-business-conditional-requirements
+purpose: Data quality checks for canonical ecommerce tables after entity and field mapping. Validations now distinguish universal
+  required fields from business-conditional required fields.
+severity_levels:
+  critical: Breaks joins, revenue reporting, payment reconciliation, or customer identity.
+  high: Strongly affects analytics accuracy or recommendation quality.
+  medium: Creates partial reporting gaps, dashboard inconsistencies, or weaker segmentation.
+  low: Useful cleanup or enrichment issue; does not block core analytics.
+global_rules:
+- id: GLOBAL_000
+  name: business_context_requirement_resolution
+  severity: critical
+  check: Before blocking a mapping for a missing field, resolve the merchant business context and apply schema.requirement_model.
+    Only universal_required fields and active conditional_required fields may block production mapping.
+  failure_action: Ask clarifying questions or mark the field not_applicable instead of treating all canonical fields as globally
+    required.
+- id: GLOBAL_001
+  name: primary_key_presence
+  severity: critical
+  check: Every mapped entity must have at least one stable identifier field.
+  failure_action: Block production mapping until identifier is selected or generated.
+- id: GLOBAL_002
+  name: duplicate_primary_keys
+  severity: critical
+  check: Primary key uniqueness must be >= 99.99% for dimension/header tables and >= 99.9% for event tables.
+  failure_action: Suggest composite key, deduplication rule, or source-system priority.
+- id: GLOBAL_003
+  name: timestamp_parseability
+  severity: high
+  check: Timestamp fields must parse to a consistent timezone-aware format.
+  failure_action: Normalize timezone and date format before metrics are computed.
+- id: GLOBAL_004
+  name: currency_consistency
+  severity: high
+  check: Money fields must have a currency or inherit one from transaction/account/store context.
+  failure_action: Ask for base currency and FX conversion policy.
+- id: GLOBAL_005
+  name: test_data_exclusion
+  severity: medium
+  check: Rows marked test, sandbox, demo, fake, cancelled, fraud, void, or internal should be separated from production metrics.
+  failure_action: Create exclusion filter and show impact on revenue/order counts.
+- id: GLOBAL_006
+  name: pii_classification
+  severity: high
+  check: PII fields such as email, phone, name, and address must be tagged before export or model training.
+  failure_action: Apply masking/tokenization policy for non-operational use cases.
+- id: GLOBAL_007
+  name: orphan_foreign_keys
+  severity: high
+  check: Foreign keys should match parent entities with acceptable orphan rate thresholds.
+  failure_action: Report missing parents and recommend source ingestion order.
+entity_rules:
+- entity: CUSTOMER
+  available_fields:
+  - customer_id
+  - account_id
+  - customer_type
+  - customer_name
+  - email
+  - phone
+  - billing_address
+  - shipping_address
+  - country
+  - acquisition_channel
+  - customer_status
+  - created_at
+  - lifetime_value
+  field_presence_rule:
+    severity: critical
+    check: For CUSTOMER, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: CUSTOMER_001
+    name: email_format
+    severity: medium
+    check: email should match a valid email-like pattern when present.
+  - id: CUSTOMER_002
+    name: customer_status_allowed_values
+    severity: medium
+    check: customer_status should map to lead, active, inactive, blocked, churned, deleted, guest, or unknown.
+  - id: CUSTOMER_003
+    name: lifetime_value_non_negative
+    severity: high
+    check: lifetime_value should be >= 0 unless stored as net loss by policy.
+  universal_required_fields:
+  - customer_id
+  conditional_required_fields:
+  - field: account_id
+    required_when:
+    - business_type in [B2B wholesale, marketplace, enterprise retail]
+    - account hierarchy, company billing, or parent-child account reporting is needed
+  - field: email
+    required_when:
+    - customer communication, marketing attribution, subscription billing, digital delivery, or identity matching is needed
+    - business_type in [DTC retail, SaaS subscription, subscription box, membership, digital goods]
+  - field: billing_address
+    required_when:
+    - invoicing, tax, B2B billing, or payment verification is needed
+  - field: shipping_address
+    required_when:
+    - physical goods, delivery, fulfillment, or returns are in scope
+  - field: country
+    required_when:
+    - cross-border sales, tax, shipping zones, compliance, or regional reporting is needed
+  - field: acquisition_channel
+    required_when:
+    - marketing attribution, CAC, cohort, or channel ROI analysis is enabled
+  recommended_fields:
+  - customer_type
+  - customer_status
+  - created_at
+  optional_fields:
+  - customer_name
+  - phone
+  - lifetime_value
+- entity: PRODUCT
+  available_fields:
+  - product_id
+  - variant_id
+  - sku
+  - product_name
+  - product_type
+  - category
+  - brand
+  - supplier_id
+  - unit_price
+  - unit_cost
+  - product_status
+  field_presence_rule:
+    severity: critical
+    check: For PRODUCT, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: PRODUCT_001
+    name: sku_uniqueness
+    severity: high
+    check: sku should be unique at variant level when sku exists.
+  - id: PRODUCT_002
+    name: unit_price_non_negative
+    severity: high
+    check: unit_price must be >= 0.
+  - id: PRODUCT_003
+    name: unit_cost_non_negative
+    severity: high
+    check: unit_cost must be >= 0 when present.
+  - id: PRODUCT_004
+    name: status_allowed_values
+    severity: medium
+    check: product_status should map to active, draft, archived, discontinued, backorder, preorder, hidden, or unknown.
+  universal_required_fields:
+  - product_id
+  conditional_required_fields:
+  - field: variant_id
+    required_when:
+    - SKU/variant-level catalog, size/color options, WMS, or variant-level inventory is used
+  - field: sku
+    required_when:
+    - physical goods, warehouse operations, barcode scanning, marketplace listing, or fulfillment is used
+  - field: supplier_id
+    required_when:
+    - procurement, dropshipping, supplier performance, purchase orders, or landed-cost analytics is needed
+  - field: unit_price
+    required_when:
+    - pricing, revenue, quote, or order-line reconstruction is needed
+  - field: unit_cost
+    required_when:
+    - gross margin, contribution margin, replenishment economics, or bundle margin is needed
+  - field: product_status
+    required_when:
+    - catalog lifecycle, active/inactive listing control, or product availability reporting is needed
+  recommended_fields:
+  - product_name
+  - product_type
+  - category
+  optional_fields:
+  - brand
+- entity: TRANSACTION
+  available_fields:
+  - transaction_id
+  - order_id
+  - invoice_id
+  - customer_id
+  - transaction_type
+  - transaction_status
+  - order_date
+  - sales_channel
+  - currency
+  - subtotal_amount
+  - discount_amount
+  - tax_amount
+  - shipping_amount
+  - total_amount
+  field_presence_rule:
+    severity: critical
+    check: For TRANSACTION, enforce universal_required_fields always; enforce conditional_required_fields only when their
+      required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: TRANSACTION_001
+    name: total_amount_formula
+    severity: high
+    check: total_amount should approximately equal subtotal_amount - discount_amount + tax_amount + shipping_amount.
+  - id: TRANSACTION_002
+    name: money_non_negative
+    severity: high
+    check: subtotal_amount, tax_amount, shipping_amount, and total_amount should be >= 0 except credit notes/refunds.
+  - id: TRANSACTION_003
+    name: order_date_not_future
+    severity: medium
+    check: order_date should not be in the future beyond allowed clock skew.
+  - id: TRANSACTION_004
+    name: status_allowed_values
+    severity: medium
+    check: transaction_status should map to pending, paid, fulfilled, cancelled, refunded, partially_refunded, voided, failed,
+      or unknown.
+  universal_required_fields:
+  - transaction_id
+  conditional_required_fields:
+  - field: order_id
+    required_when:
+    - order lifecycle, fulfillment, returns, order lines, or marketplace order reconciliation is needed
+  - field: invoice_id
+    required_when:
+    - B2B invoicing, accounting sync, ERP, QuickBooks/Xero/SAP, or accounts receivable is used
+  - field: customer_id
+    required_when:
+    - customer analytics, retention, churn, LTV, personalization, or support linkage is needed
+  - field: order_date
+    required_when:
+    - time-series revenue, cohort, seasonality, or operational reporting is needed
+  - field: sales_channel
+    required_when:
+    - omnichannel, marketplace, POS, social commerce, or store/channel reporting is needed
+  - field: currency
+    required_when:
+    - multi-currency, cross-border, marketplace payout, or accounting reconciliation is used
+  - field: subtotal_amount
+    required_when:
+    - gross/net revenue split or discount/tax/shipping reconciliation is needed
+  - field: discount_amount
+    required_when:
+    - promotion, coupon, margin leakage, or campaign ROI analysis is needed
+  - field: tax_amount
+    required_when:
+    - tax reporting, VAT/GST/sales tax, or invoice reconciliation is needed
+  - field: total_amount
+    required_when:
+    - revenue, AOV, payment reconciliation, or financial reporting is needed
+  recommended_fields:
+  - transaction_type
+  - transaction_status
+  optional_fields:
+  - shipping_amount
+- entity: ORDER_LINE
+  available_fields:
+  - order_line_id
+  - order_id
+  - product_id
+  - variant_id
+  - quantity
+  - unit_price
+  - line_total_amount
+  field_presence_rule:
+    severity: critical
+    check: For ORDER_LINE, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: ORDER_LINE_001
+    name: quantity_valid
+    severity: high
+    check: quantity should be > 0 for sales lines and < 0 only for credit/reversal lines by policy.
+  - id: ORDER_LINE_002
+    name: line_total_formula
+    severity: high
+    check: line_total_amount should approximately equal quantity * unit_price minus line discount plus tax if tax-inclusive
+      policy applies.
+  - id: ORDER_LINE_003
+    name: line_parent_exists
+    severity: critical
+    check: order_id must exist in TRANSACTION for sales analytics.
+  universal_required_fields:
+  - order_line_id
+  conditional_required_fields:
+  - field: order_id
+    required_when:
+    - order header/detail joins, basket analysis, returns, fulfillment, or invoice reconstruction is needed
+  - field: product_id
+    required_when:
+    - product performance, merchandising, recommendation, inventory, or margin analysis is needed
+  - field: variant_id
+    required_when:
+    - variant/SKU-level sales, size/color analysis, WMS, or item-level returns are used
+  - field: quantity
+    required_when:
+    - unit economics, basket size, inventory deduction, or product quantity analysis is needed
+  - field: unit_price
+    required_when:
+    - line revenue reconstruction, price variance, discount analysis, or quotes are needed
+  - field: line_total_amount
+    required_when:
+    - revenue, margin, basket, AOV, or product sales reporting is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: INVENTORY
+  available_fields:
+  - inventory_record_id
+  - product_id
+  - variant_id
+  - location_id
+  - quantity_on_hand
+  - quantity_available
+  field_presence_rule:
+    severity: critical
+    check: For INVENTORY, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: INVENTORY_001
+    name: inventory_non_negative
+    severity: medium
+    check: quantity_on_hand and quantity_available should be >= 0 unless backorder/negative inventory is allowed.
+  - id: INVENTORY_002
+    name: available_not_greater_than_on_hand
+    severity: medium
+    check: quantity_available should be <= quantity_on_hand unless virtual/infinite inventory is used.
+  - id: INVENTORY_003
+    name: location_required_for_multisite
+    severity: high
+    check: location_id is required when the business uses multiple warehouses, stores, 3PLs, or dropship nodes.
+  universal_required_fields:
+  - inventory_record_id
+  conditional_required_fields:
+  - field: product_id
+    required_when:
+    - physical goods, stock tracking, replenishment, availability, or merchandising is used
+  - field: variant_id
+    required_when:
+    - SKU/variant-level inventory or WMS is used
+  - field: location_id
+    required_when:
+    - multi-location, warehouse, store, 3PL, or stock allocation is used
+  - field: quantity_on_hand
+    required_when:
+    - stock valuation, shrinkage, inventory planning, or warehouse count is needed
+  - field: quantity_available
+    required_when:
+    - sellable availability, safety stock, backorder, or stockout prevention is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: SUBSCRIPTION
+  available_fields:
+  - subscription_id
+  - customer_id
+  - product_id
+  - subscription_status
+  - plan_name
+  - billing_interval
+  - current_period_start
+  - current_period_end
+  field_presence_rule:
+    severity: critical
+    check: For SUBSCRIPTION, enforce universal_required_fields always; enforce conditional_required_fields only when their
+      required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: SUBSCRIPTION_001
+    name: period_order
+    severity: high
+    check: current_period_start must be before current_period_end.
+  - id: SUBSCRIPTION_002
+    name: billing_interval_allowed_values
+    severity: medium
+    check: billing_interval should map to daily, weekly, monthly, quarterly, annual, prepaid, trial, or custom.
+  - id: SUBSCRIPTION_003
+    name: active_subscription_has_customer
+    severity: critical
+    check: Active subscriptions must have a customer_id.
+  universal_required_fields:
+  - subscription_id
+  conditional_required_fields:
+  - field: customer_id
+    required_when:
+    - subscriber retention, churn, LTV, invoicing, or customer support is needed
+  - field: product_id
+    required_when:
+    - plan is represented as a product, SKU, membership, or replenishment item
+  - field: subscription_status
+    required_when:
+    - active/cancelled/paused/trial lifecycle reporting is needed
+  - field: plan_name
+    required_when:
+    - human-readable plan analysis or plan migration reporting is needed
+  - field: billing_interval
+    required_when:
+    - MRR/ARR, renewal, dunning, or billing forecast is needed
+  - field: current_period_start
+    required_when:
+    - period revenue recognition, renewals, or churn window logic is needed
+  - field: current_period_end
+    required_when:
+    - renewal prediction, churn, entitlement expiry, or dunning is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: RETURN
+  available_fields:
+  - return_id
+  - order_id
+  - order_line_id
+  - return_status
+  - return_reason
+  - refund_amount
+  field_presence_rule:
+    severity: critical
+    check: For RETURN, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: RETURN_001
+    name: refund_non_negative
+    severity: high
+    check: refund_amount should be >= 0.
+  - id: RETURN_002
+    name: refund_not_exceed_order
+    severity: high
+    check: refund_amount should not exceed related order/line amount unless it includes goodwill, shipping, or fee refund.
+  - id: RETURN_003
+    name: return_status_allowed_values
+    severity: medium
+    check: return_status should map to requested, approved, received, inspected, refunded, exchanged, rejected, chargeback,
+      or unknown.
+  universal_required_fields:
+  - return_id
+  conditional_required_fields:
+  - field: order_id
+    required_when:
+    - returns must reconcile to orders or customer purchase history
+  - field: order_line_id
+    required_when:
+    - item-level return rate, reason analysis, or refund allocation is needed
+  - field: return_status
+    required_when:
+    - RMA workflow, approval, received, refunded, or exchange status is tracked
+  - field: refund_amount
+    required_when:
+    - refund reconciliation, net revenue, or return cost analysis is needed
+  recommended_fields: []
+  optional_fields:
+  - return_reason
+- entity: MARKETING
+  available_fields:
+  - campaign_id
+  - coupon_code
+  - promotion_type
+  - discount_value
+  - campaign_channel
+  - attribution_source
+  field_presence_rule:
+    severity: critical
+    check: For MARKETING, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: MARKETING_001
+    name: discount_value_non_negative
+    severity: medium
+    check: discount_value should be >= 0.
+  - id: MARKETING_002
+    name: coupon_code_normalization
+    severity: low
+    check: coupon_code should be trimmed and case-normalized for campaign attribution.
+  - id: MARKETING_003
+    name: channel_allowed_values
+    severity: low
+    check: campaign_channel should map to paid_search, paid_social, email, sms, affiliate, referral, organic, marketplace,
+      direct, or unknown.
+  universal_required_fields:
+  - campaign_id
+  conditional_required_fields:
+  - field: coupon_code
+    required_when:
+    - coupon/voucher campaign, discount redemption, or promo code tracking is used
+  - field: promotion_type
+    required_when:
+    - promotion classification, discount strategy, or offer comparison is needed
+  - field: discount_value
+    required_when:
+    - campaign cost, margin leakage, or offer economics is needed
+  - field: campaign_channel
+    required_when:
+    - channel ROI, UTM, ads, email, SMS, influencer, or affiliate reporting is needed
+  - field: attribution_source
+    required_when:
+    - source/medium/campaign attribution or CAC analysis is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: FULFILLMENT
+  available_fields:
+  - fulfillment_id
+  - order_id
+  - warehouse_id
+  - carrier_name
+  - tracking_number
+  - fulfillment_status
+  - delivered_at
+  field_presence_rule:
+    severity: critical
+    check: For FULFILLMENT, enforce universal_required_fields always; enforce conditional_required_fields only when their
+      required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: FULFILLMENT_001
+    name: delivered_after_order
+    severity: medium
+    check: delivered_at should be after related order_date when available.
+  - id: FULFILLMENT_002
+    name: tracking_required_for_shipped
+    severity: medium
+    check: tracking_number should be present for shipped status unless local pickup/digital delivery applies.
+  - id: FULFILLMENT_003
+    name: fulfillment_status_allowed_values
+    severity: medium
+    check: fulfillment_status should map to pending, picking, packed, shipped, delivered, failed, returned, cancelled, or
+      unknown.
+  universal_required_fields:
+  - fulfillment_id
+  conditional_required_fields:
+  - field: order_id
+    required_when:
+    - physical fulfillment must connect to order header or order lines
+  - field: warehouse_id
+    required_when:
+    - warehouse, 3PL, store pickup, or multi-location fulfillment is used
+  - field: carrier_name
+    required_when:
+    - shipping carrier performance, delivery SLA, or parcel tracking is needed
+  - field: tracking_number
+    required_when:
+    - parcel-level shipment tracking, WISMO, or customer notification is needed
+  - field: fulfillment_status
+    required_when:
+    - pick/pack/ship/deliver/cancel workflow or SLA reporting is needed
+  - field: delivered_at
+    required_when:
+    - delivery SLA, late delivery, or customer experience analysis is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: REVIEW
+  available_fields:
+  - review_id
+  - customer_id
+  - subject_type
+  - subject_id
+  - rating_score
+  - review_text
+  - sentiment_score
+  field_presence_rule:
+    severity: critical
+    check: For REVIEW, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: REVIEW_001
+    name: rating_range
+    severity: high
+    check: rating_score should be in the accepted business scale, usually 1 to 5 or 0 to 10.
+  - id: REVIEW_002
+    name: sentiment_range
+    severity: medium
+    check: sentiment_score should be between -1 and 1 when normalized.
+  - id: REVIEW_003
+    name: review_subject_required
+    severity: medium
+    check: subject_type and subject_id should identify product, seller, order, delivery, support, app, or service.
+  universal_required_fields:
+  - review_id
+  conditional_required_fields:
+  - field: customer_id
+    required_when:
+    - verified buyer reviews, customer satisfaction, NPS, or support linkage is needed
+  - field: subject_id
+    required_when:
+    - review must link to product, seller, order, support ticket, or store
+  - field: subject_type
+    required_when:
+    - reviews can target multiple subject types such as product, seller, store, delivery, support
+  - field: rating_score
+    required_when:
+    - star rating, NPS, CSAT, review scoring, or sentiment benchmarking is needed
+  recommended_fields: []
+  optional_fields:
+  - review_text
+  - sentiment_score
+- entity: MARKETPLACE_SELLER
+  available_fields:
+  - seller_id
+  - seller_name
+  - seller_status
+  - commission_rate
+  field_presence_rule:
+    severity: critical
+    check: For MARKETPLACE_SELLER, enforce universal_required_fields always; enforce conditional_required_fields only when
+      their required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: MARKETPLACE_SELLER_001
+    name: commission_rate_range
+    severity: high
+    check: commission_rate should be between 0 and 1 when stored as ratio, or 0 and 100 when stored as percentage.
+  - id: MARKETPLACE_SELLER_002
+    name: seller_status_allowed_values
+    severity: medium
+    check: seller_status should map to onboarding, active, suspended, inactive, terminated, or unknown.
+  universal_required_fields:
+  - seller_id
+  conditional_required_fields:
+  - field: seller_name
+    required_when:
+    - seller reporting, vendor portal, or marketplace catalog display is needed
+  - field: seller_status
+    required_when:
+    - seller onboarding, suspension, active/inactive marketplace operations are used
+  - field: commission_rate
+    required_when:
+    - commission, platform fee, payout, or seller profitability reporting is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: LOYALTY
+  available_fields:
+  - loyalty_account_id
+  - customer_id
+  - points_balance
+  - tier_name
+  - rewards_value
+  field_presence_rule:
+    severity: critical
+    check: For LOYALTY, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: LOYALTY_001
+    name: points_non_negative
+    severity: medium
+    check: points_balance should be >= 0 unless negative balance is allowed.
+  - id: LOYALTY_002
+    name: rewards_value_non_negative
+    severity: medium
+    check: rewards_value should be >= 0.
+  - id: LOYALTY_003
+    name: customer_join_required
+    severity: high
+    check: customer_id should exist in CUSTOMER for loyalty segmentation.
+  universal_required_fields:
+  - loyalty_account_id
+  conditional_required_fields:
+  - field: customer_id
+    required_when:
+    - loyalty account is tied to a known customer identity
+  - field: points_balance
+    required_when:
+    - points, miles, cashback, or reward liability is tracked
+  - field: tier_name
+    required_when:
+    - tier benefits, VIP segmentation, or status-based pricing is used
+  - field: rewards_value
+    required_when:
+    - monetary liability, cashback, voucher value, or reward accounting is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: PRICING
+  available_fields:
+  - price_rule_id
+  - product_id
+  - customer_segment
+  - min_quantity
+  - unit_price
+  field_presence_rule:
+    severity: critical
+    check: For PRICING, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: PRICING_001
+    name: min_quantity_positive
+    severity: medium
+    check: min_quantity should be >= 1.
+  - id: PRICING_002
+    name: unit_price_non_negative
+    severity: high
+    check: unit_price must be >= 0.
+  - id: PRICING_003
+    name: price_overlap_detection
+    severity: high
+    check: Price rules for the same product, segment, quantity range, and date range should not conflict.
+  universal_required_fields:
+  - price_rule_id
+  conditional_required_fields:
+  - field: product_id
+    required_when:
+    - price rule applies to specific product, SKU, bundle, or plan
+  - field: customer_segment
+    required_when:
+    - B2B tier, VIP tier, wholesale group, region, or customer-specific pricing is used
+  - field: min_quantity
+    required_when:
+    - bulk pricing, MOQ pricing, volume discount, or wholesale break is used
+  - field: unit_price
+    required_when:
+    - price list, quote, order line pricing, or price simulation is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: SESSION_BEHAVIOR
+  available_fields:
+  - session_id
+  - customer_id
+  - event_type
+  - product_id
+  - search_query
+  - event_timestamp
+  field_presence_rule:
+    severity: critical
+    check: For SESSION_BEHAVIOR, enforce universal_required_fields always; enforce conditional_required_fields only when their
+      required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: SESSION_BEHAVIOR_001
+    name: event_timestamp_parseable
+    severity: high
+    check: event_timestamp must parse and should not be in the future beyond clock skew.
+  - id: SESSION_BEHAVIOR_002
+    name: event_type_allowed_values
+    severity: medium
+    check: event_type should map to view_item, search, add_to_cart, begin_checkout, purchase, remove_from_cart, wishlist,
+      click, signup, login, or unknown.
+  - id: SESSION_BEHAVIOR_003
+    name: anonymous_identity_policy
+    severity: medium
+    check: Rows without customer_id should preserve session_id, anonymous_id, or device_id for journey analysis.
+  universal_required_fields:
+  - session_id
+  - event_type
+  - event_timestamp
+  conditional_required_fields:
+  - field: customer_id
+    required_when:
+    - authenticated browsing, customer journey stitching, personalization, or churn prediction is needed
+  - field: product_id
+    required_when:
+    - product view, add-to-cart, search result click, recommendation, or merchandising analysis is needed
+  - field: search_query
+    required_when:
+    - onsite search, zero-result search, intent mining, or search conversion analysis is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: PAYMENT
+  available_fields:
+  - payment_id
+  - transaction_id
+  - payment_method
+  - payment_status
+  - payment_amount
+  - settlement_status
+  field_presence_rule:
+    severity: critical
+    check: For PAYMENT, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: PAYMENT_001
+    name: payment_amount_non_negative
+    severity: high
+    check: payment_amount should be >= 0 except reversals/chargebacks by policy.
+  - id: PAYMENT_002
+    name: payment_status_allowed_values
+    severity: medium
+    check: payment_status should map to authorized, captured, paid, failed, refunded, partially_refunded, disputed, cancelled,
+      or pending.
+  - id: PAYMENT_003
+    name: settlement_reconciliation
+    severity: high
+    check: settlement_status should be reconciled against gateway/bank payout status when available.
+  universal_required_fields:
+  - payment_id
+  conditional_required_fields:
+  - field: transaction_id
+    required_when:
+    - payment must reconcile to order/transaction revenue
+  - field: payment_method
+    required_when:
+    - payment mix, fee optimization, fraud, or customer preference analysis is needed
+  - field: payment_status
+    required_when:
+    - authorization/capture/refund/failure/dunning workflow is tracked
+  - field: payment_amount
+    required_when:
+    - settlement, reconciliation, refund, or payment success reporting is needed
+  - field: settlement_status
+    required_when:
+    - gateway settlement, payout, accounting, or reconciliation is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: SUPPLIER
+  available_fields:
+  - supplier_id
+  - supplier_name
+  - lead_time_days
+  - minimum_order_quantity
+  field_presence_rule:
+    severity: critical
+    check: For SUPPLIER, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: SUPPLIER_001
+    name: lead_time_non_negative
+    severity: medium
+    check: lead_time_days should be >= 0.
+  - id: SUPPLIER_002
+    name: moq_non_negative
+    severity: medium
+    check: minimum_order_quantity should be >= 0 or >= 1 depending on supplier policy.
+  - id: SUPPLIER_003
+    name: supplier_name_presence
+    severity: medium
+    check: supplier_name should be present for procurement, dropship, and replenishment workflows.
+  universal_required_fields:
+  - supplier_id
+  conditional_required_fields:
+  - field: supplier_name
+    required_when:
+    - supplier performance, procurement reporting, or dropship vendor display is needed
+  - field: lead_time_days
+    required_when:
+    - replenishment planning, procurement SLA, or safety stock calculation is needed
+  - field: minimum_order_quantity
+    required_when:
+    - MOQ, wholesale procurement, or reorder optimization is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: STORE_CHANNEL
+  available_fields:
+  - store_id
+  - channel_id
+  - store_name
+  - channel_type
+  - platform_name
+  - region
+  - currency
+  - timezone
+  - is_active
+  field_presence_rule:
+    severity: critical
+    check: For STORE_CHANNEL, enforce universal_required_fields always; enforce conditional_required_fields only when their
+      required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: STORE_CHANNEL_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for STORE_CHANNEL should not be null.
+  - id: STORE_CHANNEL_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: STORE_CHANNEL_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - store_id
+  conditional_required_fields:
+  - field: channel_id
+    required_when:
+    - multiple channels, marketplace, social commerce, POS, app, web, or sales reps are used
+  - field: channel_type
+    required_when:
+    - channel segmentation, marketplace/POS/web/app/store comparison is needed
+  - field: platform_name
+    required_when:
+    - Shopify, WooCommerce, Amazon, eBay, POS, ERP, or custom platform identification is needed
+  - field: region
+    required_when:
+    - regional store/channel reporting, tax, pricing, or fulfillment routing is needed
+  - field: currency
+    required_when:
+    - multi-currency channel reporting or accounting is used
+  - field: is_active
+    required_when:
+    - channel activation, store lifecycle, or source availability control is needed
+  recommended_fields:
+  - store_name
+  optional_fields:
+  - timezone
+- entity: ADDRESS_LOCATION
+  available_fields:
+  - address_id
+  - customer_id
+  - order_id
+  - address_type
+  - address_line_1
+  - address_line_2
+  - city
+  - state_region
+  - postal_code
+  - country_code
+  - latitude
+  - longitude
+  - is_default
+  field_presence_rule:
+    severity: critical
+    check: For ADDRESS_LOCATION, enforce universal_required_fields always; enforce conditional_required_fields only when their
+      required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: ADDRESS_LOCATION_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for ADDRESS_LOCATION should not be null.
+  - id: ADDRESS_LOCATION_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: ADDRESS_LOCATION_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - address_id
+  conditional_required_fields:
+  - field: customer_id
+    required_when:
+    - address belongs to customer profile or account book
+  - field: order_id
+    required_when:
+    - address belongs to order billing/shipping/tax/fulfillment context
+  - field: address_type
+    required_when:
+    - billing, shipping, pickup, warehouse, supplier, or store address distinction is needed
+  - field: address_line_1
+    required_when:
+    - delivery, billing, tax, warehouse, or supplier address is required
+  - field: city
+    required_when:
+    - shipping zones, tax, localization, or regional reporting is needed
+  - field: state_region
+    required_when:
+    - tax nexus, shipping zones, address validation, or regional reporting is needed
+  - field: postal_code
+    required_when:
+    - shipping rates, tax, geocoding, routing, or address validation is needed
+  - field: country_code
+    required_when:
+    - cross-border sales, tax, GDPR/region, shipping, or currency logic is needed
+  recommended_fields: []
+  optional_fields:
+  - address_line_2
+  - latitude
+  - longitude
+  - is_default
+- entity: CART_CHECKOUT
+  available_fields:
+  - cart_id
+  - checkout_id
+  - customer_id
+  - session_id
+  - cart_status
+  - checkout_status
+  - created_at
+  - abandoned_at
+  - completed_at
+  - cart_value_amount
+  - item_count
+  field_presence_rule:
+    severity: critical
+    check: For CART_CHECKOUT, enforce universal_required_fields always; enforce conditional_required_fields only when their
+      required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: CART_CHECKOUT_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for CART_CHECKOUT should not be null.
+  - id: CART_CHECKOUT_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: CART_CHECKOUT_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - cart_id
+  conditional_required_fields:
+  - field: checkout_id
+    required_when:
+    - checkout flow, abandoned checkout, payment attempt, or conversion funnel is tracked
+  - field: customer_id
+    required_when:
+    - logged-in cart, customer journey, personalization, or abandoned cart recovery is used
+  - field: session_id
+    required_when:
+    - anonymous browsing, web analytics, or funnel stitching is needed
+  - field: cart_status
+    required_when:
+    - cart lifecycle, abandoned/active/converted status is tracked
+  - field: checkout_status
+    required_when:
+    - checkout started, payment pending, completed, abandoned, or failed status is tracked
+  - field: created_at
+    required_when:
+    - funnel timing, abandoned cart window, or cohort analysis is needed
+  - field: abandoned_at
+    required_when:
+    - abandoned cart recovery, remarketing, or funnel leakage analysis is needed
+  - field: completed_at
+    required_when:
+    - conversion timing or checkout-to-order linkage is needed
+  - field: cart_value_amount
+    required_when:
+    - cart value, abandoned revenue, or conversion opportunity analysis is needed
+  - field: item_count
+    required_when:
+    - basket size, cart composition, or checkout friction analysis is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: QUOTE_DRAFT_ORDER
+  available_fields:
+  - quote_id
+  - draft_order_id
+  - customer_id
+  - sales_rep_id
+  - quote_status
+  - valid_until
+  - quoted_subtotal_amount
+  - quoted_discount_amount
+  - quoted_tax_amount
+  - quoted_total_amount
+  field_presence_rule:
+    severity: critical
+    check: For QUOTE_DRAFT_ORDER, enforce universal_required_fields always; enforce conditional_required_fields only when
+      their required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: QUOTE_DRAFT_ORDER_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for QUOTE_DRAFT_ORDER should not be null.
+  - id: QUOTE_DRAFT_ORDER_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: QUOTE_DRAFT_ORDER_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - quote_id
+  conditional_required_fields:
+  - field: draft_order_id
+    required_when:
+    - Shopify draft order, manual order, sales-assisted order, or quote-to-order conversion is used
+  - field: customer_id
+    required_when:
+    - B2B account, sales rep, contract pricing, or customer-specific quote is used
+  - field: sales_rep_id
+    required_when:
+    - sales-assisted commerce, B2B negotiation, or rep performance reporting is used
+  - field: quote_status
+    required_when:
+    - quote lifecycle, approval, accepted/rejected/expired flow is tracked
+  - field: valid_until
+    required_when:
+    - quote expiry, SLA, or sales follow-up is needed
+  - field: quoted_subtotal_amount
+    required_when:
+    - quote financial comparison or discount/tax split is needed
+  - field: quoted_discount_amount
+    required_when:
+    - negotiated discount, B2B pricing, or quote margin analysis is needed
+  - field: quoted_tax_amount
+    required_when:
+    - quote tax estimate or invoice conversion is needed
+  - field: quoted_total_amount
+    required_when:
+    - quote value, pipeline, approval, or conversion reporting is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: TAX
+  available_fields:
+  - tax_id
+  - order_id
+  - order_line_id
+  - jurisdiction
+  - tax_type
+  - tax_rate
+  - taxable_amount
+  - tax_amount
+  - exemption_code
+  field_presence_rule:
+    severity: critical
+    check: For TAX, enforce universal_required_fields always; enforce conditional_required_fields only when their required_when
+      condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: TAX_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for TAX should not be null.
+  - id: TAX_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: TAX_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - tax_id
+  conditional_required_fields:
+  - field: order_id
+    required_when:
+    - tax is calculated at order/invoice level
+  - field: order_line_id
+    required_when:
+    - line-level tax, product tax class, or tax audit is needed
+  - field: jurisdiction
+    required_when:
+    - sales tax, VAT/GST, tax nexus, or regional tax reporting is needed
+  - field: tax_type
+    required_when:
+    - VAT, GST, sales tax, duty, marketplace tax, or exemption reporting is needed
+  - field: tax_rate
+    required_when:
+    - tax calculation validation or tax engine reconciliation is needed
+  - field: taxable_amount
+    required_when:
+    - tax base validation, exemption, or tax audit is needed
+  - field: tax_amount
+    required_when:
+    - tax reporting, accounting, invoice, or payment reconciliation is needed
+  - field: exemption_code
+    required_when:
+    - B2B exemption, nonprofit exemption, tax certificate, or zero-rated sales are used
+  recommended_fields: []
+  optional_fields: []
+- entity: PROMOTION_REDEMPTION
+  available_fields:
+  - redemption_id
+  - campaign_id
+  - coupon_code
+  - customer_id
+  - order_id
+  - redemption_status
+  - discount_amount
+  - redeemed_at
+  - attribution_source
+  field_presence_rule:
+    severity: critical
+    check: For PROMOTION_REDEMPTION, enforce universal_required_fields always; enforce conditional_required_fields only when
+      their required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: PROMOTION_REDEMPTION_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for PROMOTION_REDEMPTION should not be null.
+  - id: PROMOTION_REDEMPTION_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: PROMOTION_REDEMPTION_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - redemption_id
+  conditional_required_fields:
+  - field: campaign_id
+    required_when:
+    - redemption should link to marketing campaign or promotion definition
+  - field: coupon_code
+    required_when:
+    - coupon/voucher/promo-code redemption is tracked
+  - field: customer_id
+    required_when:
+    - customer-level promotion usage, abuse detection, or loyalty targeting is needed
+  - field: order_id
+    required_when:
+    - discount must reconcile to transaction/order revenue
+  - field: redemption_status
+    required_when:
+    - attempted, successful, voided, expired, or reversed redemption flow is tracked
+  - field: discount_amount
+    required_when:
+    - campaign cost, margin leakage, or net revenue reconciliation is needed
+  - field: redeemed_at
+    required_when:
+    - campaign timing, redemption window, or attribution analysis is needed
+  - field: attribution_source
+    required_when:
+    - marketing channel/source attribution for promotions is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: GIFT_CARD_STORE_CREDIT
+  available_fields:
+  - credit_account_id
+  - gift_card_id
+  - customer_id
+  - issued_amount
+  - current_balance
+  - credit_type
+  - issued_at
+  - expires_at
+  - last_redeemed_at
+  field_presence_rule:
+    severity: critical
+    check: For GIFT_CARD_STORE_CREDIT, enforce universal_required_fields always; enforce conditional_required_fields only
+      when their required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: GIFT_CARD_STORE_CREDIT_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for GIFT_CARD_STORE_CREDIT should not be null.
+  - id: GIFT_CARD_STORE_CREDIT_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: GIFT_CARD_STORE_CREDIT_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - credit_account_id
+  conditional_required_fields:
+  - field: gift_card_id
+    required_when:
+    - gift card, voucher, prepaid balance, or certificate product is used
+  - field: customer_id
+    required_when:
+    - credit balance belongs to a known customer/account
+  - field: issued_amount
+    required_when:
+    - liability tracking, gift card sales, or credit issuance reporting is needed
+  - field: current_balance
+    required_when:
+    - available credit, liability, breakage, or redemption reporting is needed
+  - field: credit_type
+    required_when:
+    - gift card, refund credit, store credit, cashback, or manual adjustment classification is needed
+  - field: issued_at
+    required_when:
+    - liability aging, expiry, or credit lifecycle reporting is needed
+  - field: expires_at
+    required_when:
+    - expiry, breakage, or regulatory compliance is needed
+  recommended_fields: []
+  optional_fields:
+  - last_redeemed_at
+- entity: WAREHOUSE_STOCK_MOVEMENT
+  available_fields:
+  - warehouse_id
+  - movement_id
+  - product_id
+  - variant_id
+  - location_id
+  - movement_type
+  - quantity_delta
+  - quantity_after
+  - movement_reason
+  - movement_timestamp
+  field_presence_rule:
+    severity: critical
+    check: For WAREHOUSE_STOCK_MOVEMENT, enforce universal_required_fields always; enforce conditional_required_fields only
+      when their required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: WAREHOUSE_STOCK_MOVEMENT_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for WAREHOUSE_STOCK_MOVEMENT should not be null.
+  - id: WAREHOUSE_STOCK_MOVEMENT_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: WAREHOUSE_STOCK_MOVEMENT_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - movement_id
+  conditional_required_fields:
+  - field: warehouse_id
+    required_when:
+    - warehouse, store, 3PL, dark store, or stock location operations are used
+  - field: product_id
+    required_when:
+    - stock movement must link to product catalog
+  - field: variant_id
+    required_when:
+    - SKU/variant-level inventory movements are tracked
+  - field: location_id
+    required_when:
+    - bin, shelf, store, warehouse zone, or stock location is used
+  - field: movement_type
+    required_when:
+    - receipt, sale, return, adjustment, transfer, damage, or shrinkage classification is needed
+  - field: quantity_delta
+    required_when:
+    - inventory movement, stock adjustment, or audit trail is needed
+  - field: movement_timestamp
+    required_when:
+    - inventory ledger, audit, reorder, or operational timeline is needed
+  recommended_fields: []
+  optional_fields:
+  - quantity_after
+  - movement_reason
+- entity: PURCHASE_ORDER
+  available_fields:
+  - purchase_order_id
+  - supplier_id
+  - warehouse_id
+  - po_status
+  - ordered_at
+  - expected_receipt_date
+  - received_at
+  - ordered_quantity
+  - received_quantity
+  - purchase_cost_amount
+  field_presence_rule:
+    severity: critical
+    check: For PURCHASE_ORDER, enforce universal_required_fields always; enforce conditional_required_fields only when their
+      required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: PURCHASE_ORDER_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for PURCHASE_ORDER should not be null.
+  - id: PURCHASE_ORDER_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: PURCHASE_ORDER_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - purchase_order_id
+  conditional_required_fields:
+  - field: supplier_id
+    required_when:
+    - procurement, replenishment, dropshipping, or supplier performance is used
+  - field: warehouse_id
+    required_when:
+    - PO is received into warehouse, store, 3PL, or stock location
+  - field: po_status
+    required_when:
+    - PO lifecycle, approval, sent, partially received, closed, or cancelled tracking is used
+  - field: ordered_at
+    required_when:
+    - procurement lead time, purchasing timeline, or inventory planning is needed
+  - field: expected_receipt_date
+    required_when:
+    - replenishment forecast, stockout prevention, or vendor SLA is needed
+  - field: received_at
+    required_when:
+    - actual lead time, receiving SLA, or supplier performance is needed
+  - field: ordered_quantity
+    required_when:
+    - purchase quantity, MOQ, replenishment, or cost planning is needed
+  - field: received_quantity
+    required_when:
+    - receiving reconciliation, shortage, overage, or inventory receipt is needed
+  - field: purchase_cost_amount
+    required_when:
+    - landed cost, margin, PO value, or supplier cost tracking is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: PAYOUT_PLATFORM_FEE
+  available_fields:
+  - payout_id
+  - seller_id
+  - transaction_id
+  - payment_id
+  - payout_status
+  - payout_amount
+  - platform_fee_amount
+  - commission_amount
+  - settlement_currency
+  - paid_out_at
+  field_presence_rule:
+    severity: critical
+    check: For PAYOUT_PLATFORM_FEE, enforce universal_required_fields always; enforce conditional_required_fields only when
+      their required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: PAYOUT_PLATFORM_FEE_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for PAYOUT_PLATFORM_FEE should not be null.
+  - id: PAYOUT_PLATFORM_FEE_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: PAYOUT_PLATFORM_FEE_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - payout_id
+  conditional_required_fields:
+  - field: seller_id
+    required_when:
+    - marketplace seller, vendor payout, or commission reporting is used
+  - field: transaction_id
+    required_when:
+    - seller payout must reconcile to order/transaction revenue
+  - field: payment_id
+    required_when:
+    - gateway settlement or payout reconciliation is needed
+  - field: payout_status
+    required_when:
+    - pending, paid, failed, reversed, or held payout workflow is tracked
+  - field: payout_amount
+    required_when:
+    - seller settlement, marketplace payable, or remittance reporting is needed
+  - field: platform_fee_amount
+    required_when:
+    - platform fee revenue, fee reconciliation, or marketplace margin is needed
+  - field: commission_amount
+    required_when:
+    - commission revenue, seller contract, or take-rate reporting is needed
+  - field: settlement_currency
+    required_when:
+    - multi-currency payout or FX reconciliation is used
+  - field: paid_out_at
+    required_when:
+    - payout aging, seller SLA, or settlement date reporting is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: DISPUTE_CHARGEBACK
+  available_fields:
+  - dispute_id
+  - payment_id
+  - order_id
+  - customer_id
+  - dispute_status
+  - dispute_reason
+  - disputed_amount
+  - evidence_due_at
+  - resolved_at
+  - outcome
+  field_presence_rule:
+    severity: critical
+    check: For DISPUTE_CHARGEBACK, enforce universal_required_fields always; enforce conditional_required_fields only when
+      their required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: DISPUTE_CHARGEBACK_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for DISPUTE_CHARGEBACK should not be null.
+  - id: DISPUTE_CHARGEBACK_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: DISPUTE_CHARGEBACK_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - dispute_id
+  conditional_required_fields:
+  - field: payment_id
+    required_when:
+    - chargeback must reconcile to payment gateway or payment record
+  - field: order_id
+    required_when:
+    - dispute should connect to order, fulfillment, or customer purchase
+  - field: customer_id
+    required_when:
+    - customer risk, fraud, support, or repeat dispute analysis is needed
+  - field: dispute_status
+    required_when:
+    - open, under_review, won, lost, accepted, or reversed dispute lifecycle is tracked
+  - field: dispute_reason
+    required_when:
+    - fraud, product_not_received, duplicate, credit_not_processed, or customer reason analysis is needed
+  - field: disputed_amount
+    required_when:
+    - financial exposure, reserve, or loss reporting is needed
+  - field: evidence_due_at
+    required_when:
+    - chargeback evidence workflow or deadline alerting is needed
+  - field: resolved_at
+    required_when:
+    - dispute aging, resolution SLA, or finance reconciliation is needed
+  - field: outcome
+    required_when:
+    - won/lost/accepted/reversed outcome reporting is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: SUPPORT_TICKET
+  available_fields:
+  - ticket_id
+  - customer_id
+  - order_id
+  - ticket_status
+  - issue_category
+  - priority
+  - assigned_agent_id
+  - opened_at
+  - resolved_at
+  - satisfaction_score
+  field_presence_rule:
+    severity: critical
+    check: For SUPPORT_TICKET, enforce universal_required_fields always; enforce conditional_required_fields only when their
+      required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: SUPPORT_TICKET_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for SUPPORT_TICKET should not be null.
+  - id: SUPPORT_TICKET_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: SUPPORT_TICKET_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - ticket_id
+  conditional_required_fields:
+  - field: customer_id
+    required_when:
+    - support is linked to customer profile or account
+  - field: order_id
+    required_when:
+    - support issue relates to order, fulfillment, return, or payment
+  - field: ticket_status
+    required_when:
+    - open, pending, solved, closed, escalated lifecycle is tracked
+  - field: issue_category
+    required_when:
+    - support root cause, product issue, delivery issue, payment issue, or return reason analysis is needed
+  - field: priority
+    required_when:
+    - SLA, escalation, or operational workload reporting is needed
+  - field: assigned_agent_id
+    required_when:
+    - agent performance, routing, or ownership reporting is needed
+  - field: opened_at
+    required_when:
+    - SLA, ticket aging, response time, or support volume trend is needed
+  - field: resolved_at
+    required_when:
+    - resolution time, SLA, or customer experience reporting is needed
+  recommended_fields: []
+  optional_fields:
+  - satisfaction_score
+- entity: CONSENT_MARKETING_OPT_IN
+  available_fields:
+  - consent_id
+  - customer_id
+  - email_opt_in
+  - sms_opt_in
+  - push_opt_in
+  - gdpr_consent_status
+  - consent_source
+  - consent_timestamp
+  - consent_revoked_at
+  field_presence_rule:
+    severity: critical
+    check: For CONSENT_MARKETING_OPT_IN, enforce universal_required_fields always; enforce conditional_required_fields only
+      when their required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: CONSENT_MARKETING_OPT_IN_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for CONSENT_MARKETING_OPT_IN should not be null.
+  - id: CONSENT_MARKETING_OPT_IN_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: CONSENT_MARKETING_OPT_IN_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - consent_id
+  conditional_required_fields:
+  - field: customer_id
+    required_when:
+    - consent belongs to a known customer, subscriber, or account
+  - field: email_opt_in
+    required_when:
+    - email marketing, newsletter, lifecycle messaging, or consent audit is used
+  - field: sms_opt_in
+    required_when:
+    - SMS, WhatsApp, mobile messaging, or phone-based campaigns are used
+  - field: push_opt_in
+    required_when:
+    - mobile app/web push notifications are used
+  - field: gdpr_consent_status
+    required_when:
+    - GDPR, CCPA, PECR, LGPD, privacy, or explicit consent compliance is in scope
+  - field: consent_source
+    required_when:
+    - audit trail, source attribution, popup/form/POS/import consent source is needed
+  - field: consent_timestamp
+    required_when:
+    - regulatory audit, consent history, or opt-in recency is needed
+  - field: consent_revoked_at
+    required_when:
+    - unsubscribe, opt-out, erasure, or consent withdrawal audit is needed
+  recommended_fields: []
+  optional_fields: []
+- entity: BUNDLE_COMPONENT
+  available_fields:
+  - bundle_id
+  - component_product_id
+  - component_variant_id
+  - quantity_required
+  - component_role
+  - allocation_price
+  - is_optional
+  field_presence_rule:
+    severity: critical
+    check: For BUNDLE_COMPONENT, enforce universal_required_fields always; enforce conditional_required_fields only when their
+      required_when condition is active. Recommended and optional fields must not block ingestion.
+    missing_field_actions:
+    - generate stable surrogate/composite key for missing universal identifiers when possible
+    - ask business-context question for active conditional fields
+    - mark not_applicable for inactive conditional fields
+    - record data-quality warning for recommended fields but continue mapping
+  recommended_checks:
+  - id: BUNDLE_COMPONENT_001
+    name: identifier_presence
+    severity: critical
+    check: Primary identifier fields for BUNDLE_COMPONENT should not be null.
+  - id: BUNDLE_COMPONENT_002
+    name: status_enum_normalization
+    severity: medium
+    check: Status/type/category fields should be normalized to a controlled ecommerce vocabulary when present.
+  - id: BUNDLE_COMPONENT_003
+    name: amount_and_quantity_sanity
+    severity: high
+    check: Money and quantity fields should not be negative unless the record represents a refund, credit, adjustment, dispute,
+      or reversal.
+  universal_required_fields:
+  - bundle_id
+  - component_product_id
+  conditional_required_fields:
+  - field: component_variant_id
+    required_when:
+    - bundle component is variant/SKU specific
+  - field: quantity_required
+    required_when:
+    - kit assembly, inventory explosion, bundle COGS, or fulfillment component pick list is needed
+  - field: component_role
+    required_when:
+    - core/optional/add-on/free-gift/packaging component logic is used
+  - field: allocation_price
+    required_when:
+    - bundle revenue allocation, margin, tax, or refund split is needed
+  recommended_fields: []
+  optional_fields:
+  - is_optional
+cross_entity_rules:
+- id: XENT_001
+  name: transaction_customer_join
+  severity: critical
+  check: TRANSACTION.customer_id should join to CUSTOMER.customer_id when customer-level analytics are required.
+  entities:
+  - TRANSACTION
+  - CUSTOMER
+- id: XENT_002
+  name: order_line_transaction_join
+  severity: critical
+  check: ORDER_LINE.order_id should join to TRANSACTION.order_id for order detail analysis.
+  entities:
+  - ORDER_LINE
+  - TRANSACTION
+- id: XENT_003
+  name: order_line_product_join
+  severity: critical
+  check: ORDER_LINE.product_id should join to PRODUCT.product_id for product performance analytics.
+  entities:
+  - ORDER_LINE
+  - PRODUCT
+- id: XENT_004
+  name: payment_transaction_reconciliation
+  severity: high
+  check: Successful PAYMENT.payment_amount should reconcile to TRANSACTION.total_amount after refunds, captures, fees, and
+    settlement timing.
+  entities:
+  - PAYMENT
+  - TRANSACTION
+  - RETURN
+- id: XENT_005
+  name: inventory_product_join
+  severity: high
+  check: INVENTORY.product_id and variant_id should map to PRODUCT product/variant identifiers.
+  entities:
+  - INVENTORY
+  - PRODUCT
+- id: XENT_006
+  name: return_order_line_consistency
+  severity: high
+  check: RETURN.order_line_id should exist in ORDER_LINE and refund_amount should not exceed related line total unless manually
+    approved.
+  entities:
+  - RETURN
+  - ORDER_LINE
+- id: CROSS_007
+  name: channel_transaction_link
+  severity: high
+  check: TRANSACTION.sales_channel should map to STORE_CHANNEL.channel_id or STORE_CHANNEL.channel_type when channel reporting
+    is required.
+- id: CROSS_008
+  name: address_order_customer_link
+  severity: high
+  check: ADDRESS_LOCATION rows linked to orders/customers should reconcile with CUSTOMER billing/shipping addresses and fulfillment
+    destinations.
+- id: CROSS_009
+  name: checkout_to_transaction_conversion
+  severity: medium
+  check: Completed CART_CHECKOUT records should have a matching TRANSACTION when the source captures both pre-purchase and
+    order data.
+- id: CROSS_010
+  name: quote_to_order_conversion
+  severity: medium
+  check: Accepted QUOTE_DRAFT_ORDER records should link to a TRANSACTION or invoice/order identifier.
+- id: CROSS_011
+  name: tax_amount_reconciliation
+  severity: critical
+  check: SUM(TAX.tax_amount) by order_id should reconcile to TRANSACTION.tax_amount within configured rounding tolerance.
+- id: CROSS_012
+  name: promotion_discount_reconciliation
+  severity: high
+  check: PROMOTION_REDEMPTION.discount_amount should reconcile to TRANSACTION.discount_amount or ORDER_LINE discount allocation.
+- id: CROSS_013
+  name: gift_card_liability_reconciliation
+  severity: high
+  check: Gift card/store credit issued, redeemed, expired, and current balance should reconcile to payment and refund records.
+- id: CROSS_014
+  name: stock_movement_inventory_reconciliation
+  severity: critical
+  check: WAREHOUSE_STOCK_MOVEMENT quantity_after should reconcile to INVENTORY.quantity_on_hand for the same product/location.
+- id: CROSS_015
+  name: purchase_order_receiving_reconciliation
+  severity: high
+  check: PURCHASE_ORDER received quantities should reconcile to inbound stock movements and inventory increases.
+- id: CROSS_016
+  name: seller_payout_reconciliation
+  severity: critical
+  check: PAYOUT_PLATFORM_FEE payout, fee, and commission values should reconcile to seller transactions and payment settlements.
+- id: CROSS_017
+  name: dispute_payment_reconciliation
+  severity: critical
+  check: DISPUTE_CHARGEBACK disputed_amount and outcomes should reconcile to PAYMENT, RETURN, and accounting adjustments.
+- id: CROSS_018
+  name: support_customer_order_link
+  severity: medium
+  check: SUPPORT_TICKET should link to CUSTOMER and TRANSACTION when the issue is customer/order related.
+- id: CROSS_019
+  name: consent_marketing_suppression
+  severity: critical
+  check: Marketing exports must respect CONSENT_MARKETING_OPT_IN opt-in/opt-out and revoked consent timestamps.
+- id: CROSS_020
+  name: bundle_component_inventory_explosion
+  severity: high
+  check: BUNDLE_COMPONENT quantity_required should be used to explode bundle sales into component inventory and component
+    cost.

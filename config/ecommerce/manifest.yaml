@@ -1,0 +1,45 @@
+pack_name: ecommerce_yaml_schema_pack_enhanced
+version: 2.2.0-business-conditional-requirements
+folder: /ecommerce/
+files:
+- schema.yaml
+- metrics.yaml
+- keywords.yaml
+- validations.yaml
+- questions.yaml
+- rules.yaml
+counts:
+  entities: 30
+  core_fields_total: 251
+  derived_metrics: 21
+  keyword_fields: 162
+  keyword_synonyms: 2481
+  validation_entity_rules: 30
+  cross_entity_validation_rules: 20
+  question_groups: 15
+  recommendation_rules: 24
+  requirement_levels:
+    universal_required: 33
+    conditional_required: 191
+    recommended: 9
+    optional: 18
+added_entities:
+- STORE_CHANNEL
+- ADDRESS_LOCATION
+- CART_CHECKOUT
+- QUOTE_DRAFT_ORDER
+- TAX
+- PROMOTION_REDEMPTION
+- GIFT_CARD_STORE_CREDIT
+- WAREHOUSE_STOCK_MOVEMENT
+- PURCHASE_ORDER
+- PAYOUT_PLATFORM_FEE
+- DISPUTE_CHARGEBACK
+- SUPPORT_TICKET
+- CONSENT_MARKETING_OPT_IN
+- BUNDLE_COMPONENT
+requirement_model: business_type_conditional_required_fields
+notes:
+- Fields are no longer treated as globally required.
+- Each entity has universal_required_fields, conditional_required_fields, recommended_fields, and optional_fields.
+- Validations enforce conditional fields only when business context or enabled metrics/workflows require them.

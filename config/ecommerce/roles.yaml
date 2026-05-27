@@ -1,0 +1,11 @@
+roles:
+  identity:
+    label: "Primary ID (e.g. User ID, Item ID, Transaction ID)"
+  content_features:
+    label: "Content Metadata (e.g. Title, Category, Brand, Description)"
+  interaction_signals:
+    label: "Behavioral Signal (e.g. Purchase, View, Click, Cart Add)"
+  filters:
+    label: "Filtering Attribute (e.g. Status, Availability, Stock)"
+  ignore:
+    label: "Discard (Ignore this column - noise or internal use)"

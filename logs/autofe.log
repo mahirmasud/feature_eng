@@ -1,0 +1,649 @@
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Profiling 200 rows × 8 columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   boolean         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   constant        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   datetime        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   id              2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   numeric         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'target'
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Profiling 200 rows × 8 columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   boolean         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   constant        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   datetime        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   id              2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   numeric         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'target'
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Profiling 200 rows × 8 columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   boolean         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   constant        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   datetime        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   id              2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   numeric         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'target'
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Profiling 200 rows × 8 columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   boolean         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   constant        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   datetime        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   id              2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   numeric         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'target'
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (200, 8)
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Dropping 1 constant columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Removed 0 duplicate rows
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: output shape (200, 7)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Profiling 200 rows × 8 columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   boolean         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   constant        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   datetime        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   id              2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   numeric         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'target'
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (200, 8)
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Dropping 1 constant columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Removed 0 duplicate rows
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: output shape (200, 7)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Profiling 205 rows × 8 columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   boolean         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   constant        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   datetime        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   id              2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   numeric         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Quality: 5 duplicate rows (2.44%)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'target'
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (205, 8)
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Dropping 1 constant columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Removed 5 duplicate rows
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: output shape (200, 7)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Profiling 200 rows × 8 columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   boolean         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   constant        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   datetime        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   id              2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   numeric         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'target'
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (200, 8)
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Dropping 1 constant columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Removed 0 duplicate rows
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: output shape (200, 7)
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Feature selection: input (100, 5)
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Variance threshold removed 1 features
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Correlation filter removed 1 features (threshold=0.95)
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Feature selection: kept 2 features
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Feature selection: input (100, 5)
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Variance threshold removed 1 features
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Correlation filter removed 1 features (threshold=0.95)
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Feature selection: kept 2 features
+2026-05-11 11:38:53 | [33mWARNING[0m | src.engineering.feature_engineer | Featuretools not installed – DFS disabled; using manual features only
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Profiling 200 rows × 8 columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   boolean         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   constant        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   datetime        1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   id              2
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler |   numeric         1
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 11:38:53 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'target'
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (200, 8)
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Dropping 1 constant columns
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Removed 0 duplicate rows
+2026-05-11 11:38:53 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: output shape (200, 7)
+2026-05-11 11:38:53 | [32mINFO[0m | src.engineering.feature_engineer | Feature engineering: input (200, 7)
+2026-05-11 11:38:53 | [32mINFO[0m | src.engineering.feature_engineer | Skipping DFS (featuretools not available)
+2026-05-11 11:38:53 | [32mINFO[0m | src.engineering.feature_engineer | Feature engineering: output (200, 20)
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Feature selection: input (200, 20)
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Variance threshold removed 2 features
+2026-05-11 11:38:53 | [32mINFO[0m | src.selection.selector | Feature selection: kept 16 features
+2026-05-11 17:54:28 | [33mWARNING[0m | src.engineering.feature_engineer | Featuretools not installed – DFS disabled; using manual features only
+2026-05-11 17:54:28 | [32mINFO[0m | src.output.exporter | Output directory: output\20260511_175428
+2026-05-11 17:54:28 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 17:54:28 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-11 17:54:28 | [32mINFO[0m | __main__ |   input  : .\data\personalized_recommendation_dataset.csv
+2026-05-11 17:54:28 | [32mINFO[0m | __main__ |   target : churn
+2026-05-11 17:54:28 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 17:54:28 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-11 17:54:28 | [32mINFO[0m | src.ingestion.loader | Loading data\personalized_recommendation_dataset.csv (.csv)
+2026-05-11 17:54:28 | [31mERROR[0m | __main__ | [Stage: LOAD] FAILED – read_csv() got an unexpected keyword argument 'infer_datetime_format'
+Traceback (most recent call last):
+  File "D:\Codefest\aaa\autofe\pipeline.py", line 139, in _stage
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\ingestion\loader.py", line 46, in load
+    return self._load_file(p)
+           ^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\ingestion\loader.py", line 83, in _load_file
+    df = loader(path)
+         ^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\ingestion\loader.py", line 113, in _load_csv
+    return pd.read_csv(
+           ^^^^^^^^^^^^
+TypeError: read_csv() got an unexpected keyword argument 'infer_datetime_format'
+2026-05-11 17:55:39 | [33mWARNING[0m | src.engineering.feature_engineer | Featuretools not installed – DFS disabled; using manual features only
+2026-05-11 17:55:39 | [32mINFO[0m | src.output.exporter | Output directory: output\20260511_175539
+2026-05-11 17:55:39 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 17:55:39 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-11 17:55:39 | [32mINFO[0m | __main__ |   input  : .\data\personalized_recommendation_dataset.csv
+2026-05-11 17:55:39 | [32mINFO[0m | __main__ |   target : churn
+2026-05-11 17:55:39 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 17:55:39 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-11 17:55:39 | [32mINFO[0m | src.ingestion.loader | Loading data\personalized_recommendation_dataset.csv (.csv)
+2026-05-11 17:55:39 | [31mERROR[0m | __main__ | [Stage: LOAD] FAILED – read_csv() got an unexpected keyword argument 'infer_datetime_format'
+Traceback (most recent call last):
+  File "D:\Codefest\aaa\autofe\pipeline.py", line 139, in _stage
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\ingestion\loader.py", line 46, in load
+    return self._load_file(p)
+           ^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\ingestion\loader.py", line 83, in _load_file
+    df = loader(path)
+         ^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\ingestion\loader.py", line 113, in _load_csv
+    return pd.read_csv(
+           ^^^^^^^^^^^^
+TypeError: read_csv() got an unexpected keyword argument 'infer_datetime_format'
+2026-05-11 18:40:03 | [33mWARNING[0m | src.engineering.feature_engineer | Featuretools unavailable (ModuleNotFoundError: No module named 'pkg_resources') – DFS disabled; using manual features only
+2026-05-11 18:40:03 | [32mINFO[0m | src.output.exporter | Output directory: output\20260511_184003
+2026-05-11 18:40:03 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 18:40:03 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-11 18:40:03 | [32mINFO[0m | __main__ |   input  : .\data\personalized_recommendation_dataset.csv
+2026-05-11 18:40:03 | [32mINFO[0m | __main__ |   target : churn
+2026-05-11 18:40:03 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 18:40:03 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-11 18:40:03 | [32mINFO[0m | src.ingestion.loader | Loading data\personalized_recommendation_dataset.csv (.csv)
+2026-05-11 18:40:03 | [32mINFO[0m | src.ingestion.loader | Loaded shape: (150000, 8)
+2026-05-11 18:40:03 | [32mINFO[0m | __main__ | [Stage: LOAD] done (0.2s)
+2026-05-11 18:40:03 | [32mINFO[0m | __main__ | [Stage: PROFILE] starting …
+2026-05-11 18:40:03 | [32mINFO[0m | src.profiling.profiler | Profiling 150000 rows × 8 columns
+2026-05-11 18:40:03 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 18:40:03 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 18:40:03 | [32mINFO[0m | src.profiling.profiler |   geospatial      1
+2026-05-11 18:40:03 | [32mINFO[0m | src.profiling.profiler |   numeric         5
+2026-05-11 18:40:03 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 18:40:03 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'churn'
+2026-05-11 18:40:03 | [32mINFO[0m | __main__ | [Stage: PROFILE] done (0.2s)
+2026-05-11 18:40:03 | [32mINFO[0m | __main__ | [Stage: CLEAN] starting …
+2026-05-11 18:40:03 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (150000, 8)
+2026-05-11 18:40:03 | [31mERROR[0m | __main__ | [Stage: CLEAN] FAILED – Function 'quantile' has no kernel matching input types (large_string)
+Traceback (most recent call last):
+  File "D:\Codefest\aaa\autofe\pipeline.py", line 139, in _stage
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\cleaning\cleaner.py", line 57, in clean
+    df = self._clip_outliers(df, col_types)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\cleaning\cleaner.py", line 197, in _clip_outliers
+    q1, q3 = s.quantile(0.25), s.quantile(0.75)
+             ^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\series.py", line 2677, in quantile
+    result = df.quantile(q=q, interpolation=interpolation, numeric_only=False)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\frame.py", line 16120, in quantile
+    res_df = self.quantile(
+             ^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\frame.py", line 16165, in quantile
+    res = data._mgr.quantile(qs=q, interpolation=interpolation)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\internals\managers.py", line 1720, in quantile
+    blk.quantile(qs=qs, interpolation=interpolation) for blk in self.blocks
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\internals\blocks.py", line 1495, in quantile
+    result = quantile_compat(self.values, np.asarray(qs._values), interpolation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\array_algos\quantile.py", line 41, in quantile_compat
+    return values._quantile(qs, interpolation)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\arrays\arrow\array.py", line 2397, in _quantile
+    result = pc.quantile(data, q=qs, interpolation=interpolation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pyarrow\compute.py", line 271, in wrapper
+    return func.call(args, options, memory_pool)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pyarrow/_compute.pyx", line 399, in pyarrow._compute.Function.call
+  File "pyarrow/error.pxi", line 155, in pyarrow.lib.pyarrow_internal_check_status
+  File "pyarrow/error.pxi", line 92, in pyarrow.lib.check_status
+pyarrow.lib.ArrowNotImplementedError: Function 'quantile' has no kernel matching input types (large_string)
+2026-05-11 18:41:24 | [33mWARNING[0m | src.engineering.feature_engineer | Featuretools unavailable (ModuleNotFoundError: No module named 'pkg_resources') – DFS disabled; using manual features only
+2026-05-11 18:41:24 | [32mINFO[0m | src.output.exporter | Output directory: output\20260511_184124
+2026-05-11 18:41:24 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 18:41:24 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-11 18:41:24 | [32mINFO[0m | __main__ |   input  : .\data\personalized_recommendation_dataset.csv
+2026-05-11 18:41:24 | [32mINFO[0m | __main__ |   target : churn
+2026-05-11 18:41:24 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 18:41:24 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-11 18:41:24 | [32mINFO[0m | src.ingestion.loader | Loading data\personalized_recommendation_dataset.csv (.csv)
+2026-05-11 18:41:24 | [32mINFO[0m | src.ingestion.loader | Loaded shape: (150000, 8)
+2026-05-11 18:41:24 | [32mINFO[0m | __main__ | [Stage: LOAD] done (0.2s)
+2026-05-11 18:41:24 | [32mINFO[0m | __main__ | [Stage: PROFILE] starting …
+2026-05-11 18:41:24 | [32mINFO[0m | src.profiling.profiler | Profiling 150000 rows × 8 columns
+2026-05-11 18:41:24 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 18:41:24 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 18:41:24 | [32mINFO[0m | src.profiling.profiler |   geospatial      1
+2026-05-11 18:41:24 | [32mINFO[0m | src.profiling.profiler |   numeric         5
+2026-05-11 18:41:24 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 18:41:24 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'churn'
+2026-05-11 18:41:24 | [32mINFO[0m | __main__ | [Stage: PROFILE] done (0.2s)
+2026-05-11 18:41:24 | [32mINFO[0m | __main__ | [Stage: CLEAN] starting …
+2026-05-11 18:41:24 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (150000, 8)
+2026-05-11 18:41:24 | [31mERROR[0m | __main__ | [Stage: CLEAN] FAILED – Function 'quantile' has no kernel matching input types (large_string)
+Traceback (most recent call last):
+  File "D:\Codefest\aaa\autofe\pipeline.py", line 139, in _stage
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\cleaning\cleaner.py", line 57, in clean
+    df = self._clip_outliers(df, col_types)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\cleaning\cleaner.py", line 197, in _clip_outliers
+    q1, q3 = s.quantile(0.25), s.quantile(0.75)
+             ^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\series.py", line 2677, in quantile
+    result = df.quantile(q=q, interpolation=interpolation, numeric_only=False)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\frame.py", line 16120, in quantile
+    res_df = self.quantile(
+             ^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\frame.py", line 16165, in quantile
+    res = data._mgr.quantile(qs=q, interpolation=interpolation)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\internals\managers.py", line 1720, in quantile
+    blk.quantile(qs=qs, interpolation=interpolation) for blk in self.blocks
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\internals\blocks.py", line 1495, in quantile
+    result = quantile_compat(self.values, np.asarray(qs._values), interpolation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\array_algos\quantile.py", line 41, in quantile_compat
+    return values._quantile(qs, interpolation)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\arrays\arrow\array.py", line 2397, in _quantile
+    result = pc.quantile(data, q=qs, interpolation=interpolation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pyarrow\compute.py", line 271, in wrapper
+    return func.call(args, options, memory_pool)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pyarrow/_compute.pyx", line 399, in pyarrow._compute.Function.call
+  File "pyarrow/error.pxi", line 155, in pyarrow.lib.pyarrow_internal_check_status
+  File "pyarrow/error.pxi", line 92, in pyarrow.lib.check_status
+pyarrow.lib.ArrowNotImplementedError: Function 'quantile' has no kernel matching input types (large_string)
+2026-05-11 18:51:50 | [32mINFO[0m | src.engineering.feature_engineer | Featuretools 1.31.0 loaded successfully
+2026-05-11 18:51:50 | [32mINFO[0m | src.output.exporter | Output directory: output\20260511_185150
+2026-05-11 18:51:50 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 18:51:50 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-11 18:51:50 | [32mINFO[0m | __main__ |   input  : .\data\personalized_recommendation_dataset.csv
+2026-05-11 18:51:50 | [32mINFO[0m | __main__ |   target : churn
+2026-05-11 18:51:50 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 18:51:50 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-11 18:51:50 | [32mINFO[0m | src.ingestion.loader | Loading data\personalized_recommendation_dataset.csv (.csv)
+2026-05-11 18:51:51 | [32mINFO[0m | src.ingestion.loader | Loaded shape: (150000, 8)
+2026-05-11 18:51:51 | [32mINFO[0m | __main__ | [Stage: LOAD] done (0.2s)
+2026-05-11 18:51:51 | [32mINFO[0m | __main__ | [Stage: PROFILE] starting …
+2026-05-11 18:51:51 | [32mINFO[0m | src.profiling.profiler | Profiling 150000 rows × 8 columns
+2026-05-11 18:51:51 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 18:51:51 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 18:51:51 | [32mINFO[0m | src.profiling.profiler |   geospatial      1
+2026-05-11 18:51:51 | [32mINFO[0m | src.profiling.profiler |   numeric         5
+2026-05-11 18:51:51 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 18:51:51 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'churn'
+2026-05-11 18:51:51 | [32mINFO[0m | __main__ | [Stage: PROFILE] done (0.2s)
+2026-05-11 18:51:51 | [32mINFO[0m | __main__ | [Stage: CLEAN] starting …
+2026-05-11 18:51:51 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (150000, 8)
+2026-05-11 18:51:51 | [31mERROR[0m | __main__ | [Stage: CLEAN] FAILED – Function 'quantile' has no kernel matching input types (large_string)
+Traceback (most recent call last):
+  File "D:\Codefest\aaa\autofe\pipeline.py", line 139, in _stage
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\cleaning\cleaner.py", line 57, in clean
+    df = self._clip_outliers(df, col_types)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\cleaning\cleaner.py", line 197, in _clip_outliers
+    q1, q3 = s.quantile(0.25), s.quantile(0.75)
+             ^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\series.py", line 2677, in quantile
+    result = df.quantile(q=q, interpolation=interpolation, numeric_only=False)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\frame.py", line 16120, in quantile
+    res_df = self.quantile(
+             ^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\frame.py", line 16165, in quantile
+    res = data._mgr.quantile(qs=q, interpolation=interpolation)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\internals\managers.py", line 1720, in quantile
+    blk.quantile(qs=qs, interpolation=interpolation) for blk in self.blocks
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\internals\blocks.py", line 1495, in quantile
+    result = quantile_compat(self.values, np.asarray(qs._values), interpolation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\array_algos\quantile.py", line 41, in quantile_compat
+    return values._quantile(qs, interpolation)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\arrays\arrow\array.py", line 2397, in _quantile
+    result = pc.quantile(data, q=qs, interpolation=interpolation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pyarrow\compute.py", line 271, in wrapper
+    return func.call(args, options, memory_pool)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pyarrow/_compute.pyx", line 399, in pyarrow._compute.Function.call
+  File "pyarrow/error.pxi", line 155, in pyarrow.lib.pyarrow_internal_check_status
+  File "pyarrow/error.pxi", line 92, in pyarrow.lib.check_status
+pyarrow.lib.ArrowNotImplementedError: Function 'quantile' has no kernel matching input types (large_string)
+2026-05-11 18:59:53 | [32mINFO[0m | src.engineering.feature_engineer | Featuretools 1.31.0 loaded successfully
+2026-05-11 18:59:53 | [32mINFO[0m | src.output.exporter | Output directory: output\20260511_185953
+2026-05-11 18:59:53 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 18:59:53 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-11 18:59:53 | [32mINFO[0m | __main__ |   input  : .\data\personalized_recommendation_dataset.csv
+2026-05-11 18:59:53 | [32mINFO[0m | __main__ |   target : churn
+2026-05-11 18:59:53 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 18:59:53 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-11 18:59:53 | [32mINFO[0m | src.ingestion.loader | Loading data\personalized_recommendation_dataset.csv (.csv)
+2026-05-11 18:59:53 | [32mINFO[0m | src.ingestion.loader | Loaded shape: (150000, 8)
+2026-05-11 18:59:53 | [32mINFO[0m | __main__ | [Stage: LOAD] done (0.2s)
+2026-05-11 18:59:53 | [32mINFO[0m | __main__ | [Stage: PROFILE] starting …
+2026-05-11 18:59:53 | [32mINFO[0m | src.profiling.profiler | Profiling 150000 rows × 8 columns
+2026-05-11 18:59:54 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 18:59:54 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 18:59:54 | [32mINFO[0m | src.profiling.profiler |   geospatial      1
+2026-05-11 18:59:54 | [32mINFO[0m | src.profiling.profiler |   numeric         5
+2026-05-11 18:59:54 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 18:59:54 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'churn'
+2026-05-11 18:59:54 | [32mINFO[0m | __main__ | [Stage: PROFILE] done (0.2s)
+2026-05-11 18:59:54 | [32mINFO[0m | __main__ | [Stage: CLEAN] starting …
+2026-05-11 18:59:54 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (150000, 8)
+2026-05-11 18:59:54 | [31mERROR[0m | __main__ | [Stage: CLEAN] FAILED – 'DataCleaner' object has no attribute '_impute'
+Traceback (most recent call last):
+  File "D:\Codefest\aaa\autofe\pipeline.py", line 139, in _stage
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\cleaning\cleaner.py", line 56, in clean
+    df = self._impute(df, col_types)
+         ^^^^^^^^^^^^
+AttributeError: 'DataCleaner' object has no attribute '_impute'
+2026-05-11 19:05:18 | [32mINFO[0m | src.engineering.feature_engineer | Featuretools 1.31.0 loaded successfully
+2026-05-11 19:05:18 | [32mINFO[0m | src.output.exporter | Output directory: output\20260511_190518
+2026-05-11 19:05:18 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 19:05:18 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-11 19:05:18 | [32mINFO[0m | __main__ |   input  : .\data\personalized_recommendation_dataset.csv
+2026-05-11 19:05:18 | [32mINFO[0m | __main__ |   target : churn
+2026-05-11 19:05:18 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 19:05:18 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-11 19:05:18 | [32mINFO[0m | src.ingestion.loader | Loading data\personalized_recommendation_dataset.csv (.csv)
+2026-05-11 19:05:19 | [32mINFO[0m | src.ingestion.loader | Loaded shape: (150000, 8)
+2026-05-11 19:05:19 | [32mINFO[0m | __main__ | [Stage: LOAD] done (0.2s)
+2026-05-11 19:05:19 | [32mINFO[0m | __main__ | [Stage: PROFILE] starting …
+2026-05-11 19:05:19 | [32mINFO[0m | src.profiling.profiler | Profiling 150000 rows × 8 columns
+2026-05-11 19:05:19 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 19:05:19 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 19:05:19 | [32mINFO[0m | src.profiling.profiler |   geospatial      1
+2026-05-11 19:05:19 | [32mINFO[0m | src.profiling.profiler |   numeric         5
+2026-05-11 19:05:19 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 19:05:19 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'churn'
+2026-05-11 19:05:19 | [32mINFO[0m | __main__ | [Stage: PROFILE] done (0.2s)
+2026-05-11 19:05:19 | [32mINFO[0m | __main__ | [Stage: CLEAN] starting …
+2026-05-11 19:05:19 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (150000, 8)
+2026-05-11 19:05:19 | [31mERROR[0m | __main__ | [Stage: CLEAN] FAILED – Function 'quantile' has no kernel matching input types (large_string)
+Traceback (most recent call last):
+  File "D:\Codefest\aaa\autofe\pipeline.py", line 139, in _stage
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\cleaning\cleaner.py", line 57, in clean
+    df = self._clip_outliers(df, col_types)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\cleaning\cleaner.py", line 306, in _clip_outliers
+    q1, q3 = s.quantile(0.25), s.quantile(0.75)
+             ^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\series.py", line 2677, in quantile
+    result = df.quantile(q=q, interpolation=interpolation, numeric_only=False)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\frame.py", line 16120, in quantile
+    res_df = self.quantile(
+             ^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\frame.py", line 16165, in quantile
+    res = data._mgr.quantile(qs=q, interpolation=interpolation)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\internals\managers.py", line 1720, in quantile
+    blk.quantile(qs=qs, interpolation=interpolation) for blk in self.blocks
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\internals\blocks.py", line 1495, in quantile
+    result = quantile_compat(self.values, np.asarray(qs._values), interpolation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\array_algos\quantile.py", line 41, in quantile_compat
+    return values._quantile(qs, interpolation)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\core\arrays\arrow\array.py", line 2397, in _quantile
+    result = pc.quantile(data, q=qs, interpolation=interpolation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pyarrow\compute.py", line 271, in wrapper
+    return func.call(args, options, memory_pool)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pyarrow/_compute.pyx", line 399, in pyarrow._compute.Function.call
+  File "pyarrow/error.pxi", line 155, in pyarrow.lib.pyarrow_internal_check_status
+  File "pyarrow/error.pxi", line 92, in pyarrow.lib.check_status
+pyarrow.lib.ArrowNotImplementedError: Function 'quantile' has no kernel matching input types (large_string)
+2026-05-11 19:24:22 | [32mINFO[0m | src.engineering.feature_engineer | Featuretools 1.31.0 loaded successfully
+2026-05-11 19:24:22 | [32mINFO[0m | src.output.exporter | Output directory: output\20260511_192422
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ |   input  : .\data\personalized_recommendation_dataset.csv
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ |   target : churn
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-11 19:24:22 | [32mINFO[0m | src.ingestion.loader | Loading data\personalized_recommendation_dataset.csv (.csv)
+2026-05-11 19:24:22 | [32mINFO[0m | src.ingestion.loader | Loaded shape: (150000, 8)
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ | [Stage: LOAD] done (0.2s)
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ | [Stage: PROFILE] starting …
+2026-05-11 19:24:22 | [32mINFO[0m | src.profiling.profiler | Profiling 150000 rows × 8 columns
+2026-05-11 19:24:22 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 19:24:22 | [32mINFO[0m | src.profiling.profiler |   categorical     2
+2026-05-11 19:24:22 | [32mINFO[0m | src.profiling.profiler |   geospatial      1
+2026-05-11 19:24:22 | [32mINFO[0m | src.profiling.profiler |   numeric         5
+2026-05-11 19:24:22 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 19:24:22 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'churn'
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ | [Stage: PROFILE] done (0.2s)
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ | [Stage: CLEAN] starting …
+2026-05-11 19:24:22 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (150000, 8)
+2026-05-11 19:24:22 | [32mINFO[0m | src.cleaning.cleaner | Removed 0 duplicate rows
+2026-05-11 19:24:22 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: output shape (150000, 8)
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ | [Stage: CLEAN] done (0.3s)
+2026-05-11 19:24:22 | [32mINFO[0m | __main__ | [Stage: ENGINEER] starting …
+2026-05-11 19:24:22 | [32mINFO[0m | src.engineering.feature_engineer | Feature engineering: input (150000, 8)
+2026-05-11 19:24:22 | [32mINFO[0m | src.engineering.feature_engineer | Building Featuretools EntitySet …
+2026-05-11 19:24:23 | [33mWARNING[0m | src.engineering.feature_engineer | DFS failed (Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init); falling back to manual features only
+2026-05-11 19:24:23 | [32mINFO[0m | src.engineering.feature_engineer | Feature engineering: output (150000, 15)
+2026-05-11 19:24:23 | [32mINFO[0m | __main__ | [Stage: ENGINEER] done (0.9s)
+2026-05-11 19:24:23 | [32mINFO[0m | __main__ | [Stage: SELECT] starting …
+2026-05-11 19:24:23 | [32mINFO[0m | src.selection.selector | Feature selection: input (150000, 15)
+2026-05-11 19:24:35 | [32mINFO[0m | src.selection.selector | Removed 2 duplicate feature columns
+2026-05-11 19:24:35 | [32mINFO[0m | src.selection.selector | Variance threshold removed 2 features
+2026-05-11 19:24:35 | [32mINFO[0m | src.selection.selector | Correlation filter removed 3 features (threshold=0.95)
+2026-05-11 19:24:35 | [32mINFO[0m | src.selection.selector | Dropping potentially leaky ID columns: ['user_id', 'item_id']
+2026-05-11 19:24:35 | [32mINFO[0m | src.selection.selector | Feature selection: kept 6 features
+2026-05-11 19:24:35 | [32mINFO[0m | __main__ | [Stage: SELECT] done (11.3s)
+2026-05-11 19:24:35 | [32mINFO[0m | __main__ | [Stage: EXPORT] starting …
+2026-05-11 19:24:35 | [32mINFO[0m | src.output.exporter | Saved cleaned_data → output\20260511_192422\cleaned_data.parquet ((150000, 15))
+2026-05-11 19:24:36 | [32mINFO[0m | src.output.exporter | Saved cleaned_data → output\20260511_192422\cleaned_data.csv ((150000, 15))
+2026-05-11 19:24:36 | [32mINFO[0m | src.output.exporter | Saved feature_matrix → output\20260511_192422\feature_matrix.parquet ((150000, 15))
+2026-05-11 19:24:37 | [32mINFO[0m | src.output.exporter | Saved feature_matrix → output\20260511_192422\feature_matrix.csv ((150000, 15))
+2026-05-11 19:24:37 | [32mINFO[0m | src.output.exporter | Saved selected_features → output\20260511_192422\selected_features.parquet ((150000, 6))
+2026-05-11 19:24:37 | [32mINFO[0m | src.output.exporter | Saved selected_features → output\20260511_192422\selected_features.csv ((150000, 6))
+2026-05-11 19:24:37 | [32mINFO[0m | src.output.exporter | Saved feature_definitions.json
+2026-05-11 19:24:37 | [32mINFO[0m | src.output.exporter | Saved metadata.json
+2026-05-11 19:24:37 | [32mINFO[0m | src.output.exporter | Saved profiling_report.json
+2026-05-11 19:24:37 | [32mINFO[0m | src.output.exporter | Saved selected_feature_list.txt (6 features)
+2026-05-11 19:24:37 | [32mINFO[0m | src.output.exporter | All artefacts saved to output\20260511_192422
+2026-05-11 19:24:37 | [32mINFO[0m | __main__ | [Stage: EXPORT] done (2.6s)
+2026-05-11 19:24:37 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 19:24:37 | [32mINFO[0m | __main__ | Pipeline complete in 15.5s
+2026-05-11 19:24:37 | [32mINFO[0m | __main__ | Final feature matrix: 150000 rows × 6 features
+2026-05-11 19:24:37 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 19:41:11 | [32mINFO[0m | src.engineering.feature_engineer | Featuretools 1.31.0 loaded successfully
+2026-05-11 19:41:11 | [32mINFO[0m | src.output.exporter | Output directory: output\20260511_194111
+2026-05-11 19:41:11 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 19:41:11 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-11 19:41:11 | [32mINFO[0m | __main__ |   input  : .\data\output.csv
+2026-05-11 19:41:11 | [32mINFO[0m | __main__ |   target : churn
+2026-05-11 19:41:11 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 19:41:11 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-11 19:41:11 | [32mINFO[0m | src.ingestion.loader | Loading data\output.csv (.csv)
+2026-05-11 19:41:57 | [32mINFO[0m | src.ingestion.loader | Large file (2127 MB) – loading in chunks
+2026-05-11 19:42:03 | [33mWARNING[0m | src.ingestion.loader | Capped at 500000 rows for memory safety
+2026-05-11 19:42:03 | [32mINFO[0m | src.ingestion.loader | Loaded shape: (500000, 7)
+2026-05-11 19:42:03 | [32mINFO[0m | __main__ | [Stage: LOAD] done (52.1s)
+2026-05-11 19:42:03 | [32mINFO[0m | __main__ | [Stage: PROFILE] starting …
+2026-05-11 19:42:03 | [32mINFO[0m | src.profiling.profiler | Profiling 500000 rows × 7 columns
+2026-05-11 19:42:09 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 19:42:09 | [32mINFO[0m | src.profiling.profiler |   categorical     1
+2026-05-11 19:42:09 | [32mINFO[0m | src.profiling.profiler |   id              2
+2026-05-11 19:42:09 | [32mINFO[0m | src.profiling.profiler |   numeric         4
+2026-05-11 19:42:09 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 19:42:09 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'churn'
+2026-05-11 19:42:09 | [32mINFO[0m | __main__ | [Stage: PROFILE] done (6.2s)
+2026-05-11 19:42:09 | [32mINFO[0m | __main__ | [Stage: CLEAN] starting …
+2026-05-11 19:42:09 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (500000, 7)
+2026-05-11 19:42:15 | [32mINFO[0m | src.cleaning.cleaner | Removed 0 duplicate rows
+2026-05-11 19:42:15 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: output shape (500000, 7)
+2026-05-11 19:42:15 | [32mINFO[0m | __main__ | [Stage: CLEAN] done (5.7s)
+2026-05-11 19:42:15 | [32mINFO[0m | __main__ | [Stage: ENGINEER] starting …
+2026-05-11 19:42:15 | [32mINFO[0m | src.engineering.feature_engineer | Feature engineering: input (500000, 7)
+2026-05-11 19:42:15 | [32mINFO[0m | src.engineering.feature_engineer | Building Featuretools EntitySet …
+2026-05-11 19:42:18 | [33mWARNING[0m | src.engineering.feature_engineer | DFS failed (Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init); falling back to manual features only
+2026-05-11 19:42:19 | [32mINFO[0m | src.engineering.feature_engineer | Feature engineering: output (500000, 13)
+2026-05-11 19:42:19 | [32mINFO[0m | __main__ | [Stage: ENGINEER] done (4.8s)
+2026-05-11 19:42:19 | [32mINFO[0m | __main__ | [Stage: SELECT] starting …
+2026-05-11 19:42:19 | [32mINFO[0m | src.selection.selector | Feature selection: input (500000, 13)
+2026-05-11 19:44:40 | [32mINFO[0m | src.selection.selector | Correlation filter removed 2 features (threshold=0.95)
+2026-05-11 19:44:40 | [32mINFO[0m | src.selection.selector | Dropping potentially leaky ID columns: ['product_id']
+2026-05-11 19:44:40 | [32mINFO[0m | src.selection.selector | Feature selection: kept 10 features
+2026-05-11 19:44:40 | [32mINFO[0m | __main__ | [Stage: SELECT] done (140.8s)
+2026-05-11 19:44:40 | [32mINFO[0m | __main__ | [Stage: EXPORT] starting …
+2026-05-11 19:44:41 | [32mINFO[0m | src.output.exporter | Saved cleaned_data → output\20260511_194111\cleaned_data.parquet ((500000, 13))
+2026-05-11 19:44:47 | [32mINFO[0m | src.output.exporter | Saved cleaned_data → output\20260511_194111\cleaned_data.csv ((500000, 13))
+2026-05-11 19:44:47 | [32mINFO[0m | src.output.exporter | Saved feature_matrix → output\20260511_194111\feature_matrix.parquet ((500000, 13))
+2026-05-11 19:44:53 | [32mINFO[0m | src.output.exporter | Saved feature_matrix → output\20260511_194111\feature_matrix.csv ((500000, 13))
+2026-05-11 19:44:53 | [32mINFO[0m | src.output.exporter | Saved selected_features → output\20260511_194111\selected_features.parquet ((500000, 10))
+2026-05-11 19:44:58 | [32mINFO[0m | src.output.exporter | Saved selected_features → output\20260511_194111\selected_features.csv ((500000, 10))
+2026-05-11 19:44:58 | [32mINFO[0m | src.output.exporter | Saved feature_definitions.json
+2026-05-11 19:44:58 | [32mINFO[0m | src.output.exporter | Saved metadata.json
+2026-05-11 19:44:58 | [32mINFO[0m | src.output.exporter | Saved profiling_report.json
+2026-05-11 19:44:58 | [32mINFO[0m | src.output.exporter | Saved selected_feature_list.txt (10 features)
+2026-05-11 19:44:58 | [32mINFO[0m | src.output.exporter | All artefacts saved to output\20260511_194111
+2026-05-11 19:44:58 | [32mINFO[0m | __main__ | [Stage: EXPORT] done (17.7s)
+2026-05-11 19:44:58 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 19:44:58 | [32mINFO[0m | __main__ | Pipeline complete in 227.4s
+2026-05-11 19:44:58 | [32mINFO[0m | __main__ | Final feature matrix: 500000 rows × 10 features
+2026-05-11 19:44:58 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 20:20:55 | [32mINFO[0m | src.engineering.feature_engineer | Featuretools 1.31.0 loaded successfully
+2026-05-11 20:20:55 | [32mINFO[0m | src.output.exporter | Output directory: output\20260511_202055
+2026-05-11 20:20:55 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 20:20:55 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-11 20:20:55 | [32mINFO[0m | __main__ |   input  : .\data\output.csv
+2026-05-11 20:20:55 | [32mINFO[0m | __main__ |   target : churn
+2026-05-11 20:20:55 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 20:20:55 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-11 20:20:55 | [32mINFO[0m | src.ingestion.loader | Loading data\output.csv (.csv)
+2026-05-11 20:21:38 | [32mINFO[0m | src.ingestion.loader | Large file (2127 MB) – loading in chunks
+2026-05-11 20:21:45 | [33mWARNING[0m | src.ingestion.loader | Capped at 500000 rows for memory safety
+2026-05-11 20:21:45 | [32mINFO[0m | src.ingestion.loader | Loaded shape: (500000, 7)
+2026-05-11 20:21:45 | [32mINFO[0m | __main__ | [Stage: LOAD] done (49.9s)
+2026-05-11 20:21:45 | [32mINFO[0m | __main__ | [Stage: PROFILE] starting …
+2026-05-11 20:21:45 | [32mINFO[0m | src.profiling.profiler | Profiling 500000 rows × 7 columns
+2026-05-11 20:21:50 | [32mINFO[0m | src.profiling.profiler | Column type distribution:
+2026-05-11 20:21:50 | [32mINFO[0m | src.profiling.profiler |   categorical     1
+2026-05-11 20:21:50 | [32mINFO[0m | src.profiling.profiler |   id              2
+2026-05-11 20:21:50 | [32mINFO[0m | src.profiling.profiler |   numeric         4
+2026-05-11 20:21:50 | [32mINFO[0m | src.profiling.profiler | Quality: 0 duplicate rows (0.0%)
+2026-05-11 20:21:50 | [32mINFO[0m | src.profiling.profiler | Suggested target: 'churn'
+2026-05-11 20:21:50 | [32mINFO[0m | __main__ | [Stage: PROFILE] done (5.7s)
+2026-05-11 20:21:50 | [32mINFO[0m | __main__ | [Stage: CLEAN] starting …
+2026-05-11 20:21:50 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: input shape (500000, 7)
+2026-05-11 20:21:56 | [32mINFO[0m | src.cleaning.cleaner | Removed 0 duplicate rows
+2026-05-11 20:21:56 | [32mINFO[0m | src.cleaning.cleaner | Cleaning: output shape (500000, 7)
+2026-05-11 20:21:56 | [32mINFO[0m | __main__ | [Stage: CLEAN] done (5.6s)
+2026-05-11 20:21:56 | [32mINFO[0m | __main__ | [Stage: ENGINEER] starting …
+2026-05-11 20:21:56 | [32mINFO[0m | src.engineering.feature_engineer | Feature engineering: input (500000, 7)
+2026-05-11 20:21:56 | [32mINFO[0m | src.engineering.feature_engineer | Building Featuretools EntitySet …
+2026-05-11 20:22:00 | [33mWARNING[0m | src.engineering.feature_engineer | DFS failed (Woodwork not initialized for this DataFrame. Initialize by calling DataFrame.ww.init); falling back to manual features only
+2026-05-11 20:22:01 | [32mINFO[0m | src.engineering.feature_engineer | Feature engineering: output (500000, 13)
+2026-05-11 20:22:01 | [32mINFO[0m | __main__ | [Stage: ENGINEER] done (4.7s)
+2026-05-11 20:22:01 | [32mINFO[0m | __main__ | [Stage: SELECT] starting …
+2026-05-11 20:22:01 | [32mINFO[0m | src.selection.selector | Feature selection: input (500000, 13)
+2026-05-11 20:24:21 | [32mINFO[0m | src.selection.selector | Correlation filter removed 2 features (threshold=0.95)
+2026-05-11 20:24:21 | [32mINFO[0m | src.selection.selector | Dropping potentially leaky ID columns: ['product_id']
+2026-05-11 20:24:21 | [32mINFO[0m | src.selection.selector | Feature selection: kept 10 features
+2026-05-11 20:24:21 | [32mINFO[0m | __main__ | [Stage: SELECT] done (139.9s)
+2026-05-11 20:24:21 | [32mINFO[0m | __main__ | [Stage: EXPORT] starting …
+2026-05-11 20:24:22 | [32mINFO[0m | src.output.exporter | Saved cleaned_data → output\20260511_202055\cleaned_data.parquet ((500000, 13))
+2026-05-11 20:24:27 | [32mINFO[0m | src.output.exporter | Saved cleaned_data → output\20260511_202055\cleaned_data.csv ((500000, 13))
+2026-05-11 20:24:28 | [32mINFO[0m | src.output.exporter | Saved feature_matrix → output\20260511_202055\feature_matrix.parquet ((500000, 13))
+2026-05-11 20:24:33 | [32mINFO[0m | src.output.exporter | Saved feature_matrix → output\20260511_202055\feature_matrix.csv ((500000, 13))
+2026-05-11 20:24:34 | [32mINFO[0m | src.output.exporter | Saved selected_features → output\20260511_202055\selected_features.parquet ((500000, 10))
+2026-05-11 20:24:39 | [32mINFO[0m | src.output.exporter | Saved selected_features → output\20260511_202055\selected_features.csv ((500000, 10))
+2026-05-11 20:24:39 | [32mINFO[0m | src.output.exporter | Saved feature_definitions.json
+2026-05-11 20:24:39 | [32mINFO[0m | src.output.exporter | Saved metadata.json
+2026-05-11 20:24:39 | [32mINFO[0m | src.output.exporter | Saved profiling_report.json
+2026-05-11 20:24:39 | [32mINFO[0m | src.output.exporter | Saved selected_feature_list.txt (10 features)
+2026-05-11 20:24:39 | [32mINFO[0m | src.output.exporter | All artefacts saved to output\20260511_202055
+2026-05-11 20:24:39 | [32mINFO[0m | __main__ | [Stage: EXPORT] done (18.5s)
+2026-05-11 20:24:39 | [32mINFO[0m | __main__ | ============================================================
+2026-05-11 20:24:39 | [32mINFO[0m | __main__ | Pipeline complete in 224.5s
+2026-05-11 20:24:39 | [32mINFO[0m | __main__ | Final feature matrix: 500000 rows × 10 features
+2026-05-11 20:24:39 | [32mINFO[0m | __main__ | ============================================================
+2026-05-27 17:16:57 | [32mINFO[0m | src.engineering.feature_engineer | Featuretools 1.31.0 loaded successfully
+2026-05-27 17:16:57 | [32mINFO[0m | src.output.exporter | Output directory: output\20260527_171657
+2026-05-27 17:16:57 | [32mINFO[0m | __main__ | ============================================================
+2026-05-27 17:16:57 | [32mINFO[0m | __main__ | AutoFE Pipeline starting
+2026-05-27 17:16:57 | [32mINFO[0m | __main__ |   input  : data/data.csv
+2026-05-27 17:16:57 | [32mINFO[0m | __main__ |   target : churn
+2026-05-27 17:16:57 | [32mINFO[0m | __main__ | ============================================================
+2026-05-27 17:16:57 | [32mINFO[0m | __main__ | [Stage: LOAD] starting …
+2026-05-27 17:16:57 | [32mINFO[0m | src.ingestion.loader | Loading data\data.csv (.csv)
+2026-05-27 17:16:57 | [31mERROR[0m | __main__ | [Stage: LOAD] FAILED – 'ascii' codec can't decode byte 0xa3 in position 79780: ordinal not in range(128)
+Traceback (most recent call last):
+  File "D:\Codefest\aaa\autofe\pipeline.py", line 139, in _stage
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\ingestion\loader.py", line 51, in load
+    return self._load_file(p)
+           ^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\ingestion\loader.py", line 88, in _load_file
+    df = loader(path)
+         ^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\src\ingestion\loader.py", line 122, in _load_csv
+    return pd.read_csv(
+           ^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\io\parsers\readers.py", line 873, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\io\parsers\readers.py", line 306, in _read
+    return parser.read(nrows)
+           ^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\io\parsers\readers.py", line 1947, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Codefest\aaa\autofe\env\Lib\site-packages\pandas\io\parsers\c_parser_wrapper.py", line 219, in read
+    data = self._reader.read(nrows)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/parsers.pyx", line 814, in pandas._libs.parsers.TextReader.read
+  File "pandas/_libs/parsers.pyx", line 906, in pandas._libs.parsers.TextReader._read_rows
+  File "pandas/_libs/parsers.pyx", line 885, in pandas._libs.parsers.TextReader._check_tokenize_status
+  File "pandas/_libs/parsers.pyx", line 2076, in pandas._libs.parsers.raise_parser_error
+  File "C:\Users\m1cu63\AppData\Local\Programs\Python\Python312\Lib\encodings\ascii.py", line 26, in decode
+    return codecs.ascii_decode(input, self.errors)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'ascii' codec can't decode byte 0xa3 in position 79780: ordinal not in range(128)

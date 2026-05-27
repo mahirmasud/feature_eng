@@ -1,0 +1,4834 @@
+schema_name: universal_ecommerce_schema
+version: 2.2.0-business-conditional-requirements
+purpose: Canonical ecommerce data model used for entity recognition, field recognition, analytics, and recommendation engines.
+  Includes business-type-aware field requirement policies so fields are not treated as globally required.
+layer: 'Layer 1: Universal E-commerce Schema'
+design_principles:
+- 'Canonical but source-system tolerant: maps Shopify, Stripe, QuickBooks, SAP-style ERP, analytics, and custom e-commerce
+  schemas into one semantic layer.'
+- 'Business-type aware: every entity declares which e-commerce business models normally use it.'
+- 'Niche-case aware: supports physical, digital, SaaS, subscription boxes, memberships, rental/bookings, marketplaces, B2B
+  pricing, dropshipping, loyalty, and clickstream analytics.'
+- 'Recognition-first: entity/table detection and field/column detection metadata are built into the schema so it can power
+  automated mapping.'
+- 'Advanced operational coverage: includes channels, addresses, carts, quotes, tax, promotion redemption, gift/store credit,
+  stock movements, purchase orders, payouts/fees, disputes, support, consent, and bundle components.'
+business_types_supported:
+- DTC retail
+- omnichannel retail
+- B2B wholesale
+- marketplace
+- SaaS subscription
+- subscription box
+- membership
+- digital goods
+- rental/bookings
+- dropshipping
+- replenishment commerce
+- loyalty-led commerce
+- services commerce
+- multi-vendor commerce
+- social commerce
+- POS retail
+- cross-border commerce
+- global commerce
+- creator commerce
+- custom bundles
+- 3PL commerce
+- high-ticket retail
+- assisted sales
+- custom manufacturing
+- payment-led commerce
+counts:
+  entities: 30
+  core_fields_total: 251
+  derived_metrics: 21
+  requirement_levels:
+    universal_required: 33
+    conditional_required: 191
+    recommended: 9
+    optional: 18
+  requirement_model_version: business_conditional_v1
+entities:
+- entity: CUSTOMER
+  purpose: Customer, buyer, account, subscriber, member, or company account.
+  row_grain: one row per customer/account identity
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - SaaS subscription
+  - subscription box
+  - membership
+  - digital goods
+  - rental/bookings
+  covers:
+  - retail buyer
+  - B2B account
+  - subscriber
+  - member
+  - guest checkout
+  entity_recognition:
+    table_name_patterns:
+    - customers
+    - customer
+    - users
+    - contacts
+    - accounts
+    - buyers
+    - members
+    - subscribers
+    - clients
+    - b2b_accounts
+    positive_column_signals:
+    - customer_id
+    - account_id
+    - customer_type
+    - customer_name
+    - email
+    - phone
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Customer primary identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Customer
+    - Stripe Customer
+    - QuickBooks Customer
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: account_id
+    data_type: string
+    semantic_role: identifier
+    description: B2B account, company account, household, or parent account identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id001
+    - business_type in [B2B wholesale, marketplace, enterprise retail]
+    - account hierarchy, company billing, or parent-child account reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: customer_type
+    data_type: enum
+    semantic_role: categorical
+    description: Customer classification such as guest, retail buyer, B2B account, subscriber, member, reseller, or marketplace
+      buyer.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: recommended
+    required_when: []
+    missing_strategy: do not block ingestion; use for better matching, segmentation, and analytics quality when available
+  - name: customer_name
+    data_type: string
+    semantic_role: pii
+    description: Person name, company name, display name, or account name.
+    nullable: true
+    sensitivity: PII
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: email
+    data_type: string
+    semantic_role: pii
+    description: Customer email address.
+    nullable: true
+    sensitivity: PII
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id002
+    - customer communication, marketing attribution, subscription billing, digital delivery, or identity matching is needed
+    - business_type in [DTC retail, SaaS subscription, subscription box, membership, digital goods]
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: phone
+    data_type: string
+    semantic_role: pii
+    description: Customer phone or mobile number.
+    nullable: true
+    sensitivity: PII
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: billing_address
+    data_type: object
+    semantic_role: pii
+    description: Billing address used for invoicing, tax, and payment validation.
+    nullable: true
+    sensitivity: PII
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id003
+    - invoicing, tax, B2B billing, or payment verification is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: shipping_address
+    data_type: object
+    semantic_role: pii
+    description: Delivery address, service address, or fulfillment destination.
+    nullable: true
+    sensitivity: PII
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id004
+    - physical goods, delivery, fulfillment, or returns are in scope
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: country
+    data_type: string
+    semantic_role: attribute
+    description: Customer, address, order, or operating country code/name.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id005
+    - cross-border sales, tax, shipping zones, compliance, or regional reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: acquisition_channel
+    data_type: string
+    semantic_role: attribute
+    description: Original acquisition, referral, campaign, platform, marketplace, or sales source.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id006
+    - marketing attribution, CAC, cohort, or channel ROI analysis is enabled
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: customer_status
+    data_type: enum
+    semantic_role: categorical
+    description: Customer lifecycle status such as lead, active, inactive, blocked, churned, or deleted.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: recommended
+    required_when: []
+    missing_strategy: do not block ingestion; use for better matching, segmentation, and analytics quality when available
+  - name: created_at
+    data_type: timestamp
+    semantic_role: timestamp
+    description: Record creation timestamp.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: recommended
+    required_when: []
+    missing_strategy: do not block ingestion; use for better matching, segmentation, and analytics quality when available
+  - name: lifetime_value
+    data_type: decimal
+    semantic_role: measure
+    description: Known or computed total customer value across orders, renewals, and refunds.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  requirement_policy:
+    universal_required_fields:
+    - customer_id
+    conditional_required_fields:
+    - field: account_id
+      required_when: *id001
+    - field: email
+      required_when: *id002
+    - field: billing_address
+      required_when: *id003
+    - field: shipping_address
+      required_when: *id004
+    - field: country
+      required_when: *id005
+    - field: acquisition_channel
+      required_when: *id006
+    recommended_fields:
+    - customer_type
+    - customer_status
+    - created_at
+    optional_fields:
+    - customer_name
+    - phone
+    - lifetime_value
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: PRODUCT
+  purpose: 'Sellable catalog object: item, variant, SKU, plan, bundle, digital asset, rental asset, or service.'
+  row_grain: one row per product or product variant depending on source granularity
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - SaaS subscription
+  - subscription box
+  - digital goods
+  - rental/bookings
+  - dropshipping
+  covers:
+  - physical goods
+  - digital goods
+  - subscription plan
+  - bundle
+  - rental
+  - service
+  - gift card
+  entity_recognition:
+    table_name_patterns:
+    - products
+    - product
+    - items
+    - item_master
+    - catalog
+    - variants
+    - skus
+    - plans
+    - bundles
+    - assets
+    - services
+    positive_column_signals:
+    - product_id
+    - variant_id
+    - sku
+    - product_name
+    - product_type
+    - category
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: product_id
+    data_type: string
+    semantic_role: identifier
+    description: Product, catalog item, SKU group, plan, asset, or service identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Product
+    - QuickBooks Item
+    - SAP Commerce Product
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: variant_id
+    data_type: string
+    semantic_role: identifier
+    description: Variant or option-level identifier for size, color, package, plan tier, or configuration.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify ProductVariant
+    requirement_level: conditional_required
+    required_when: &id007
+    - SKU/variant-level catalog, size/color options, WMS, or variant-level inventory is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: sku
+    data_type: string
+    semantic_role: identifier
+    description: Stock keeping unit or sellable item code.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify ProductVariant
+    - SAP Commerce Product
+    requirement_level: conditional_required
+    required_when: &id008
+    - physical goods, warehouse operations, barcode scanning, marketplace listing, or fulfillment is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: product_name
+    data_type: string
+    semantic_role: attribute
+    description: Product title, item name, service name, digital product name, or plan label.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: recommended
+    required_when: []
+    missing_strategy: do not block ingestion; use for better matching, segmentation, and analytics quality when available
+  - name: product_type
+    data_type: enum
+    semantic_role: categorical
+    description: Product model such as physical, digital, subscription plan, bundle, rental, gift card, or service.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: recommended
+    required_when: []
+    missing_strategy: do not block ingestion; use for better matching, segmentation, and analytics quality when available
+  - name: category
+    data_type: string
+    semantic_role: attribute
+    description: Product taxonomy category, collection, department, family, or vertical.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: recommended
+    required_when: []
+    missing_strategy: do not block ingestion; use for better matching, segmentation, and analytics quality when available
+  - name: brand
+    data_type: string
+    semantic_role: attribute
+    description: Brand, manufacturer brand, label, publisher, or content owner.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: supplier_id
+    data_type: string
+    semantic_role: identifier
+    description: Supplier, vendor, dropshipper, procurement source, or manufacturer identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id009
+    - procurement, dropshipping, supplier performance, purchase orders, or landed-cost analytics is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: unit_price
+    data_type: decimal
+    semantic_role: measure
+    description: Base selling price per unit before line-level quantity multiplication.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id010
+    - pricing, revenue, quote, or order-line reconstruction is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: unit_cost
+    data_type: decimal
+    semantic_role: measure
+    description: Cost per unit used for margin, inventory valuation, and COGS calculations.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id011
+    - gross margin, contribution margin, replenishment economics, or bundle margin is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: product_status
+    data_type: enum
+    semantic_role: categorical
+    description: Catalog status such as active, draft, archived, discontinued, unpublished, or out-of-stock.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id012
+    - catalog lifecycle, active/inactive listing control, or product availability reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - product_id
+    conditional_required_fields:
+    - field: variant_id
+      required_when: *id007
+    - field: sku
+      required_when: *id008
+    - field: supplier_id
+      required_when: *id009
+    - field: unit_price
+      required_when: *id010
+    - field: unit_cost
+      required_when: *id011
+    - field: product_status
+      required_when: *id012
+    recommended_fields:
+    - product_name
+    - product_type
+    - category
+    optional_fields:
+    - brand
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: TRANSACTION
+  purpose: 'Commercial header record: order, invoice, booking, subscription charge, checkout, sales receipt, or marketplace
+    order.'
+  row_grain: one row per commercial transaction header
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - SaaS subscription
+  - subscription box
+  - membership
+  - digital goods
+  - rental/bookings
+  - services commerce
+  covers:
+  - orders
+  - invoices
+  - bookings
+  - subscriptions
+  - charges
+  - B2B purchase orders
+  entity_recognition:
+    table_name_patterns:
+    - orders
+    - order
+    - transactions
+    - sales
+    - invoices
+    - bookings
+    - charges
+    - checkouts
+    - sales_receipts
+    - pos_orders
+    positive_column_signals:
+    - transaction_id
+    - order_id
+    - invoice_id
+    - customer_id
+    - transaction_type
+    - transaction_status
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: transaction_id
+    data_type: string
+    semantic_role: identifier
+    description: Commercial transaction identifier covering orders, invoices, bookings, charges, or subscription billings.
+    nullable: false
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Order
+    - Stripe PaymentIntent
+    - QuickBooks Invoice
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: order_id
+    data_type: string
+    semantic_role: identifier
+    description: Order identifier or cart/checkout converted purchase identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id013
+    - order lifecycle, fulfillment, returns, order lines, or marketplace order reconciliation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: invoice_id
+    data_type: string
+    semantic_role: identifier
+    description: Invoice, bill, sales receipt, or accounting document identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id014
+    - B2B invoicing, accounting sync, ERP, QuickBooks/Xero/SAP, or accounts receivable is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Customer primary identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Customer
+    - Stripe Customer
+    - QuickBooks Customer
+    requirement_level: conditional_required
+    required_when: &id015
+    - customer analytics, retention, churn, LTV, personalization, or support linkage is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: transaction_type
+    data_type: enum
+    semantic_role: categorical
+    description: Transaction class such as order, invoice, booking, renewal, charge, refund, exchange, or adjustment.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: recommended
+    required_when: []
+    missing_strategy: do not block ingestion; use for better matching, segmentation, and analytics quality when available
+  - name: transaction_status
+    data_type: enum
+    semantic_role: categorical
+    description: Business status such as pending, open, paid, partially_paid, fulfilled, cancelled, completed, refunded, or
+      failed.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: recommended
+    required_when: []
+    missing_strategy: do not block ingestion; use for better matching, segmentation, and analytics quality when available
+  - name: order_date
+    data_type: timestamp
+    semantic_role: timestamp
+    description: Order, invoice, booking, charge, or transaction creation date/time.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id016
+    - time-series revenue, cohort, seasonality, or operational reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: sales_channel
+    data_type: string
+    semantic_role: attribute
+    description: Channel where the transaction originated, such as web, app, POS, marketplace, wholesale, social, or call
+      center.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id017
+    - omnichannel, marketplace, POS, social commerce, or store/channel reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: currency
+    data_type: string
+    semantic_role: attribute
+    description: ISO currency code or transaction currency.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id018
+    - multi-currency, cross-border, marketplace payout, or accounting reconciliation is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: subtotal_amount
+    data_type: decimal
+    semantic_role: measure
+    description: Merchandise subtotal before tax, shipping, duties, and order-level adjustments.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id019
+    - gross/net revenue split or discount/tax/shipping reconciliation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: discount_amount
+    data_type: decimal
+    semantic_role: measure
+    description: Total discount, promotion, coupon, or allowance amount.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id020
+    - promotion, coupon, margin leakage, or campaign ROI analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: tax_amount
+    data_type: decimal
+    semantic_role: measure
+    description: Tax, VAT, GST, duty, or fee amount.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id021
+    - tax reporting, VAT/GST/sales tax, or invoice reconciliation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: shipping_amount
+    data_type: decimal
+    semantic_role: measure
+    description: Shipping, handling, delivery, freight, or logistics charge.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: total_amount
+    data_type: decimal
+    semantic_role: measure
+    description: Grand total, amount due, paid amount, booking value, or gross merchandise value.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id022
+    - revenue, AOV, payment reconciliation, or financial reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - transaction_id
+    conditional_required_fields:
+    - field: order_id
+      required_when: *id013
+    - field: invoice_id
+      required_when: *id014
+    - field: customer_id
+      required_when: *id015
+    - field: order_date
+      required_when: *id016
+    - field: sales_channel
+      required_when: *id017
+    - field: currency
+      required_when: *id018
+    - field: subtotal_amount
+      required_when: *id019
+    - field: discount_amount
+      required_when: *id020
+    - field: tax_amount
+      required_when: *id021
+    - field: total_amount
+      required_when: *id022
+    recommended_fields:
+    - transaction_type
+    - transaction_status
+    optional_fields:
+    - shipping_amount
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: ORDER_LINE
+  purpose: 'Transaction detail row: basket item, cart line, invoice line, booking item, fulfillment line, subscription item.'
+  row_grain: one row per item/charge line inside a transaction
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - SaaS subscription
+  - subscription box
+  - digital goods
+  - rental/bookings
+  covers:
+  - line items
+  - basket detail
+  - cart detail
+  - invoice detail
+  - subscription item
+  entity_recognition:
+    table_name_patterns:
+    - order_lines
+    - line_items
+    - order_items
+    - cart_items
+    - basket_lines
+    - invoice_lines
+    - transaction_lines
+    - checkout_items
+    positive_column_signals:
+    - order_line_id
+    - order_id
+    - product_id
+    - variant_id
+    - quantity
+    - unit_price
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: order_line_id
+    data_type: string
+    semantic_role: identifier
+    description: Line item identifier for basket, cart, order, invoice, booking, or subscription item rows.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: order_id
+    data_type: string
+    semantic_role: identifier
+    description: Order identifier or cart/checkout converted purchase identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id023
+    - order header/detail joins, basket analysis, returns, fulfillment, or invoice reconstruction is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: product_id
+    data_type: string
+    semantic_role: identifier
+    description: Product, catalog item, SKU group, plan, asset, or service identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Product
+    - QuickBooks Item
+    - SAP Commerce Product
+    requirement_level: conditional_required
+    required_when: &id024
+    - product performance, merchandising, recommendation, inventory, or margin analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: variant_id
+    data_type: string
+    semantic_role: identifier
+    description: Variant or option-level identifier for size, color, package, plan tier, or configuration.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify ProductVariant
+    requirement_level: conditional_required
+    required_when: &id025
+    - variant/SKU-level sales, size/color analysis, WMS, or item-level returns are used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quantity
+    data_type: decimal
+    semantic_role: measure
+    description: Ordered, invoiced, booked, returned, shipped, or purchased quantity.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id026
+    - unit economics, basket size, inventory deduction, or product quantity analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: unit_price
+    data_type: decimal
+    semantic_role: measure
+    description: Base selling price per unit before line-level quantity multiplication.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id027
+    - line revenue reconstruction, price variance, discount analysis, or quotes are needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: line_total_amount
+    data_type: decimal
+    semantic_role: measure
+    description: Line-level extended amount after unit price, quantity, and line adjustments.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id028
+    - revenue, margin, basket, AOV, or product sales reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - order_line_id
+    conditional_required_fields:
+    - field: order_id
+      required_when: *id023
+    - field: product_id
+      required_when: *id024
+    - field: variant_id
+      required_when: *id025
+    - field: quantity
+      required_when: *id026
+    - field: unit_price
+      required_when: *id027
+    - field: line_total_amount
+      required_when: *id028
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: INVENTORY
+  purpose: Stock and availability by product, variant, and location, including physical, virtual, allocated, and available
+    stock.
+  row_grain: one row per product/variant/location stock position
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - subscription box
+  - rental/bookings
+  - dropshipping
+  covers:
+  - warehouse stock
+  - multi-location stock
+  - reserved stock
+  - virtual inventory
+  - dropship availability
+  entity_recognition:
+    table_name_patterns:
+    - inventory
+    - stock
+    - inventory_levels
+    - warehouse_stock
+    - on_hand
+    - stock_positions
+    - availability
+    - fulfillment_inventory
+    positive_column_signals:
+    - inventory_record_id
+    - product_id
+    - variant_id
+    - location_id
+    - quantity_on_hand
+    - quantity_available
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: inventory_record_id
+    data_type: string
+    semantic_role: identifier
+    description: Inventory record identifier for a specific product/variant/location combination.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: product_id
+    data_type: string
+    semantic_role: identifier
+    description: Product, catalog item, SKU group, plan, asset, or service identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Product
+    - QuickBooks Item
+    - SAP Commerce Product
+    requirement_level: conditional_required
+    required_when: &id029
+    - physical goods, stock tracking, replenishment, availability, or merchandising is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: variant_id
+    data_type: string
+    semantic_role: identifier
+    description: Variant or option-level identifier for size, color, package, plan tier, or configuration.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify ProductVariant
+    requirement_level: conditional_required
+    required_when: &id030
+    - SKU/variant-level inventory or WMS is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: location_id
+    data_type: string
+    semantic_role: identifier
+    description: Warehouse, store, 3PL, fulfillment center, dropship node, or virtual stock location identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id031
+    - multi-location, warehouse, store, 3PL, or stock allocation is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quantity_on_hand
+    data_type: decimal
+    semantic_role: measure
+    description: Physical stock currently held at a location.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify InventoryItem/InventoryLevel
+    - ERP stock records
+    requirement_level: conditional_required
+    required_when: &id032
+    - stock valuation, shrinkage, inventory planning, or warehouse count is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quantity_available
+    data_type: decimal
+    semantic_role: measure
+    description: Sellable stock after reservations, safety stock, commitments, and allocations.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id033
+    - sellable availability, safety stock, backorder, or stockout prevention is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - inventory_record_id
+    conditional_required_fields:
+    - field: product_id
+      required_when: *id029
+    - field: variant_id
+      required_when: *id030
+    - field: location_id
+      required_when: *id031
+    - field: quantity_on_hand
+      required_when: *id032
+    - field: quantity_available
+      required_when: *id033
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: SUBSCRIPTION
+  purpose: 'Recurring commerce object: SaaS plan, box subscription, membership, auto-replenishment, or recurring service contract.'
+  row_grain: one row per active or historical subscription contract
+  business_types:
+  - SaaS subscription
+  - subscription box
+  - membership
+  - replenishment commerce
+  - digital goods
+  - services commerce
+  covers:
+  - SaaS
+  - subscription box
+  - membership
+  - replenishment
+  - usage-based plan
+  entity_recognition:
+    table_name_patterns:
+    - subscriptions
+    - subscription
+    - memberships
+    - plans
+    - contracts
+    - recurring_orders
+    - replenishments
+    - billing_agreements
+    positive_column_signals:
+    - subscription_id
+    - customer_id
+    - product_id
+    - subscription_status
+    - plan_name
+    - billing_interval
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: subscription_id
+    data_type: string
+    semantic_role: identifier
+    description: Subscription, membership, contract, recurring billing, or replenishment identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints:
+    - Stripe Subscription
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Customer primary identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Customer
+    - Stripe Customer
+    - QuickBooks Customer
+    requirement_level: conditional_required
+    required_when: &id034
+    - subscriber retention, churn, LTV, invoicing, or customer support is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: product_id
+    data_type: string
+    semantic_role: identifier
+    description: Product, catalog item, SKU group, plan, asset, or service identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Product
+    - QuickBooks Item
+    - SAP Commerce Product
+    requirement_level: conditional_required
+    required_when: &id035
+    - plan is represented as a product, SKU, membership, or replenishment item
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: subscription_status
+    data_type: enum
+    semantic_role: categorical
+    description: Subscription lifecycle status such as trialing, active, paused, past_due, cancelled, expired, or churned.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id036
+    - active/cancelled/paused/trial lifecycle reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: plan_name
+    data_type: string
+    semantic_role: attribute
+    description: Plan, tier, package, membership, or recurring product label.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id037
+    - human-readable plan analysis or plan migration reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: billing_interval
+    data_type: string
+    semantic_role: attribute
+    description: Billing cadence such as day, week, month, quarter, year, usage-based, or custom interval.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id038
+    - MRR/ARR, renewal, dunning, or billing forecast is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: current_period_start
+    data_type: timestamp
+    semantic_role: timestamp
+    description: Start timestamp of the active billing or service period.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id039
+    - period revenue recognition, renewals, or churn window logic is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: current_period_end
+    data_type: timestamp
+    semantic_role: timestamp
+    description: End timestamp of the active billing or service period.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id040
+    - renewal prediction, churn, entitlement expiry, or dunning is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - subscription_id
+    conditional_required_fields:
+    - field: customer_id
+      required_when: *id034
+    - field: product_id
+      required_when: *id035
+    - field: subscription_status
+      required_when: *id036
+    - field: plan_name
+      required_when: *id037
+    - field: billing_interval
+      required_when: *id038
+    - field: current_period_start
+      required_when: *id039
+    - field: current_period_end
+      required_when: *id040
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: RETURN
+  purpose: 'Reverse-commerce workflow: returns, refunds, exchanges, RMAs, chargebacks, and cancellations.'
+  row_grain: one row per return/refund/exchange request or settlement event
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - subscription box
+  - rental/bookings
+  covers:
+  - returns
+  - refunds
+  - exchanges
+  - chargebacks
+  - RMA
+  - reverse fulfillment
+  entity_recognition:
+    table_name_patterns:
+    - returns
+    - refunds
+    - rma
+    - exchanges
+    - chargebacks
+    - reverse_logistics
+    - credit_memos
+    - refund_receipts
+    positive_column_signals:
+    - return_id
+    - order_id
+    - order_line_id
+    - return_status
+    - return_reason
+    - refund_amount
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: return_id
+    data_type: string
+    semantic_role: identifier
+    description: Return, RMA, refund request, exchange, reverse logistics, or chargeback identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Return
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: order_id
+    data_type: string
+    semantic_role: identifier
+    description: Order identifier or cart/checkout converted purchase identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id041
+    - returns must reconcile to orders or customer purchase history
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: order_line_id
+    data_type: string
+    semantic_role: identifier
+    description: Line item identifier for basket, cart, order, invoice, booking, or subscription item rows.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id042
+    - item-level return rate, reason analysis, or refund allocation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: return_status
+    data_type: enum
+    semantic_role: categorical
+    description: Return workflow status such as requested, approved, in_transit, received, inspected, refunded, rejected,
+      or exchanged.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id043
+    - RMA workflow, approval, received, refunded, or exchange status is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: return_reason
+    data_type: string
+    semantic_role: attribute
+    description: Customer or operational reason for return, refund, exchange, chargeback, or cancellation.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: refund_amount
+    data_type: decimal
+    semantic_role: measure
+    description: Refunded amount, credit amount, chargeback amount, or reversal value.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id044
+    - refund reconciliation, net revenue, or return cost analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - return_id
+    conditional_required_fields:
+    - field: order_id
+      required_when: *id041
+    - field: order_line_id
+      required_when: *id042
+    - field: return_status
+      required_when: *id043
+    - field: refund_amount
+      required_when: *id044
+    recommended_fields: []
+    optional_fields:
+    - return_reason
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: MARKETING
+  purpose: 'Demand-generation and discounting records: campaigns, coupons, vouchers, referrals, affiliates, and promotions.'
+  row_grain: one row per campaign, coupon, voucher, or attribution rule
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - SaaS subscription
+  - subscription box
+  - membership
+  - digital goods
+  covers:
+  - coupons
+  - campaigns
+  - vouchers
+  - referrals
+  - affiliates
+  - influencer codes
+  entity_recognition:
+    table_name_patterns:
+    - campaigns
+    - promotions
+    - discounts
+    - coupons
+    - vouchers
+    - referrals
+    - utm
+    - affiliates
+    - promo_codes
+    positive_column_signals:
+    - campaign_id
+    - coupon_code
+    - promotion_type
+    - discount_value
+    - campaign_channel
+    - attribution_source
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: campaign_id
+    data_type: string
+    semantic_role: identifier
+    description: Campaign, promotion, referral, voucher program, or marketing activity identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: coupon_code
+    data_type: string
+    semantic_role: identifier
+    description: Coupon, voucher, promo, gift card, reward, or referral code.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id045
+    - coupon/voucher campaign, discount redemption, or promo code tracking is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: promotion_type
+    data_type: enum
+    semantic_role: categorical
+    description: Promotion mechanism such as percentage, fixed_amount, free_shipping, bundle, referral, cashback, or loyalty
+      reward.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id046
+    - promotion classification, discount strategy, or offer comparison is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: discount_value
+    data_type: decimal
+    semantic_role: measure
+    description: Configured promotion value, coupon value, points value, or voucher value.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id047
+    - campaign cost, margin leakage, or offer economics is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: campaign_channel
+    data_type: string
+    semantic_role: attribute
+    description: Marketing channel such as email, SMS, paid search, social, affiliate, influencer, or in-app.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id048
+    - channel ROI, UTM, ads, email, SMS, influencer, or affiliate reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: attribution_source
+    data_type: string
+    semantic_role: attribute
+    description: Source, medium, referrer, UTM, affiliate, creator, or partner tied to attribution.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id049
+    - source/medium/campaign attribution or CAC analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - campaign_id
+    conditional_required_fields:
+    - field: coupon_code
+      required_when: *id045
+    - field: promotion_type
+      required_when: *id046
+    - field: discount_value
+      required_when: *id047
+    - field: campaign_channel
+      required_when: *id048
+    - field: attribution_source
+      required_when: *id049
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: FULFILLMENT
+  purpose: Outbound fulfillment, shipment, delivery, pickup, 3PL, carrier tracking, or service dispatch.
+  row_grain: one row per shipment/fulfillment/delivery attempt
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - subscription box
+  - rental/bookings
+  - dropshipping
+  covers:
+  - shipments
+  - tracking
+  - delivery
+  - pickup
+  - 3PL
+  - carrier movement
+  entity_recognition:
+    table_name_patterns:
+    - fulfillments
+    - shipments
+    - deliveries
+    - tracking
+    - dispatches
+    - 3pl_jobs
+    - shipping_labels
+    - carrier_events
+    positive_column_signals:
+    - fulfillment_id
+    - order_id
+    - warehouse_id
+    - carrier_name
+    - tracking_number
+    - fulfillment_status
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: fulfillment_id
+    data_type: string
+    semantic_role: identifier
+    description: Fulfillment, shipment, delivery, pickup, 3PL job, or service dispatch identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: order_id
+    data_type: string
+    semantic_role: identifier
+    description: Order identifier or cart/checkout converted purchase identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id050
+    - physical fulfillment must connect to order header or order lines
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: warehouse_id
+    data_type: string
+    semantic_role: identifier
+    description: Fulfilling warehouse, store, depot, dropship node, or 3PL location identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id051
+    - warehouse, 3PL, store pickup, or multi-location fulfillment is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: carrier_name
+    data_type: string
+    semantic_role: attribute
+    description: Carrier, courier, shipping company, delivery provider, or 3PL service name.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id052
+    - shipping carrier performance, delivery SLA, or parcel tracking is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: tracking_number
+    data_type: string
+    semantic_role: identifier
+    description: Tracking number, consignment number, AWB, waybill, or delivery reference.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify FulfillmentTrackingInfo
+    requirement_level: conditional_required
+    required_when: &id053
+    - parcel-level shipment tracking, WISMO, or customer notification is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: fulfillment_status
+    data_type: enum
+    semantic_role: categorical
+    description: Fulfillment state such as pending, picking, packed, shipped, out_for_delivery, delivered, failed, or returned.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id054
+    - pick/pack/ship/deliver/cancel workflow or SLA reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: delivered_at
+    data_type: timestamp
+    semantic_role: timestamp
+    description: Delivery completion, pickup completion, or service completion timestamp.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id055
+    - delivery SLA, late delivery, or customer experience analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - fulfillment_id
+    conditional_required_fields:
+    - field: order_id
+      required_when: *id050
+    - field: warehouse_id
+      required_when: *id051
+    - field: carrier_name
+      required_when: *id052
+    - field: tracking_number
+      required_when: *id053
+    - field: fulfillment_status
+      required_when: *id054
+    - field: delivered_at
+      required_when: *id055
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: REVIEW
+  purpose: 'Customer feedback record: product review, seller review, NPS, CSAT, delivery rating, sentiment, complaint, or
+    survey.'
+  row_grain: one row per feedback response
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - marketplace
+  - SaaS subscription
+  - membership
+  - digital goods
+  - services commerce
+  covers:
+  - ratings
+  - reviews
+  - NPS
+  - CSAT
+  - sentiment
+  - seller feedback
+  entity_recognition:
+    table_name_patterns:
+    - reviews
+    - ratings
+    - feedback
+    - nps
+    - surveys
+    - csat
+    - sentiment
+    - testimonials
+    - complaints
+    positive_column_signals:
+    - review_id
+    - customer_id
+    - subject_type
+    - subject_id
+    - rating_score
+    - review_text
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: review_id
+    data_type: string
+    semantic_role: identifier
+    description: Review, rating, survey, NPS response, feedback, or support satisfaction identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Customer primary identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Customer
+    - Stripe Customer
+    - QuickBooks Customer
+    requirement_level: conditional_required
+    required_when: &id056
+    - verified buyer reviews, customer satisfaction, NPS, or support linkage is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: subject_type
+    data_type: enum
+    semantic_role: categorical
+    description: Reviewed subject type such as product, order, seller, delivery, support, app, or brand.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id058
+    - reviews can target multiple subject types such as product, seller, store, delivery, support
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: subject_id
+    data_type: string
+    semantic_role: identifier
+    description: Identifier of the reviewed product, order, seller, delivery, support ticket, or brand.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id057
+    - review must link to product, seller, order, support ticket, or store
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: rating_score
+    data_type: decimal
+    semantic_role: measure
+    description: Numeric rating, star rating, NPS score, CSAT, or satisfaction score.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id059
+    - star rating, NPS, CSAT, review scoring, or sentiment benchmarking is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: review_text
+    data_type: string
+    semantic_role: attribute
+    description: Review body, feedback comment, survey response, or complaint text.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: sentiment_score
+    data_type: decimal
+    semantic_role: measure
+    description: Sentiment score or polarity derived from review text, support tickets, or survey feedback.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  requirement_policy:
+    universal_required_fields:
+    - review_id
+    conditional_required_fields:
+    - field: customer_id
+      required_when: *id056
+    - field: subject_id
+      required_when: *id057
+    - field: subject_type
+      required_when: *id058
+    - field: rating_score
+      required_when: *id059
+    recommended_fields: []
+    optional_fields:
+    - review_text
+    - sentiment_score
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: MARKETPLACE_SELLER
+  purpose: 'Marketplace supply-side party: seller, merchant, vendor, partner, consignor, or storefront.'
+  row_grain: one row per marketplace seller/vendor account
+  business_types:
+  - marketplace
+  - multi-vendor commerce
+  - B2B wholesale
+  - dropshipping
+  covers:
+  - vendors
+  - merchants
+  - commission
+  - seller onboarding
+  entity_recognition:
+    table_name_patterns:
+    - sellers
+    - marketplace_sellers
+    - vendors
+    - merchants
+    - partners
+    - stores
+    - seller_accounts
+    positive_column_signals:
+    - seller_id
+    - seller_name
+    - seller_status
+    - commission_rate
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: seller_id
+    data_type: string
+    semantic_role: identifier
+    description: Marketplace seller, vendor, merchant, partner, or consignor identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: seller_name
+    data_type: string
+    semantic_role: attribute
+    description: Marketplace seller, vendor, merchant, partner, or storefront name.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id060
+    - seller reporting, vendor portal, or marketplace catalog display is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: seller_status
+    data_type: enum
+    semantic_role: categorical
+    description: Seller lifecycle status such as active, inactive, onboarding, suspended, probation, or terminated.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id061
+    - seller onboarding, suspension, active/inactive marketplace operations are used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: commission_rate
+    data_type: decimal
+    semantic_role: measure
+    description: Marketplace commission, revenue-share, take-rate, referral fee, or platform fee percentage.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id062
+    - commission, platform fee, payout, or seller profitability reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - seller_id
+    conditional_required_fields:
+    - field: seller_name
+      required_when: *id060
+    - field: seller_status
+      required_when: *id061
+    - field: commission_rate
+      required_when: *id062
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: LOYALTY
+  purpose: Rewards, membership, points, miles, wallet, cashback, tiering, and retention economics.
+  row_grain: one row per loyalty/rewards account
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - marketplace
+  - membership
+  - subscription box
+  - loyalty-led commerce
+  covers:
+  - points
+  - rewards
+  - miles
+  - cashback
+  - VIP tier
+  - member wallet
+  entity_recognition:
+    table_name_patterns:
+    - loyalty
+    - rewards
+    - points
+    - wallet
+    - cashback
+    - miles
+    - memberships
+    - vip_tiers
+    positive_column_signals:
+    - loyalty_account_id
+    - customer_id
+    - points_balance
+    - tier_name
+    - rewards_value
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: loyalty_account_id
+    data_type: string
+    semantic_role: identifier
+    description: Loyalty, rewards, membership, miles, points, or cashback account identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Customer primary identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Customer
+    - Stripe Customer
+    - QuickBooks Customer
+    requirement_level: conditional_required
+    required_when: &id063
+    - loyalty account is tied to a known customer identity
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: points_balance
+    data_type: decimal
+    semantic_role: measure
+    description: Current loyalty points, miles, rewards credits, or cashback balance.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id064
+    - points, miles, cashback, or reward liability is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: tier_name
+    data_type: string
+    semantic_role: attribute
+    description: Loyalty tier, member grade, status level, VIP segment, or rewards club level.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id065
+    - tier benefits, VIP segmentation, or status-based pricing is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: rewards_value
+    data_type: decimal
+    semantic_role: measure
+    description: Monetary value of redeemable rewards, cashback, wallet balance, or credits.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id066
+    - monetary liability, cashback, voucher value, or reward accounting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - loyalty_account_id
+    conditional_required_fields:
+    - field: customer_id
+      required_when: *id063
+    - field: points_balance
+      required_when: *id064
+    - field: tier_name
+      required_when: *id065
+    - field: rewards_value
+      required_when: *id066
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: PRICING
+  purpose: 'Commercial pricing rules: B2B price lists, contract pricing, quantity breaks, regional pricing, and customer-group
+    pricing.'
+  row_grain: one row per price rule, price list item, tier, or customer-segment price
+  business_types:
+  - B2B wholesale
+  - DTC retail
+  - omnichannel retail
+  - marketplace
+  - SaaS subscription
+  - membership
+  covers:
+  - B2B tiers
+  - price lists
+  - bulk pricing
+  - contract pricing
+  - customer group pricing
+  entity_recognition:
+    table_name_patterns:
+    - pricing
+    - price_lists
+    - price_rules
+    - price_books
+    - contract_prices
+    - tier_prices
+    - customer_prices
+    - discount_rules
+    positive_column_signals:
+    - price_rule_id
+    - product_id
+    - customer_segment
+    - min_quantity
+    - unit_price
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: price_rule_id
+    data_type: string
+    semantic_role: identifier
+    description: Price list, price book, contract price, tier rule, or promotion price identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: product_id
+    data_type: string
+    semantic_role: identifier
+    description: Product, catalog item, SKU group, plan, asset, or service identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Product
+    - QuickBooks Item
+    - SAP Commerce Product
+    requirement_level: conditional_required
+    required_when: &id067
+    - price rule applies to specific product, SKU, bundle, or plan
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: customer_segment
+    data_type: string
+    semantic_role: attribute
+    description: Customer segment, B2B group, price group, region, membership tier, or audience.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id068
+    - B2B tier, VIP tier, wholesale group, region, or customer-specific pricing is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: min_quantity
+    data_type: decimal
+    semantic_role: measure
+    description: Minimum quantity or quantity break required for a price tier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id069
+    - bulk pricing, MOQ pricing, volume discount, or wholesale break is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: unit_price
+    data_type: decimal
+    semantic_role: measure
+    description: Base selling price per unit before line-level quantity multiplication.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id070
+    - price list, quote, order line pricing, or price simulation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - price_rule_id
+    conditional_required_fields:
+    - field: product_id
+      required_when: *id067
+    - field: customer_segment
+      required_when: *id068
+    - field: min_quantity
+      required_when: *id069
+    - field: unit_price
+      required_when: *id070
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: SESSION_BEHAVIOR
+  purpose: 'Clickstream and funnel behavior: visits, views, searches, add-to-cart, checkout, purchase, and refund events.'
+  row_grain: one row per tracked user/session event
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - marketplace
+  - SaaS subscription
+  - membership
+  - digital goods
+  - services commerce
+  covers:
+  - clicks
+  - views
+  - add-to-cart
+  - search
+  - checkout
+  - purchase
+  - refund
+  entity_recognition:
+    table_name_patterns:
+    - events
+    - sessions
+    - clickstream
+    - web_events
+    - app_events
+    - analytics_events
+    - behavior
+    - funnel_events
+    positive_column_signals:
+    - session_id
+    - customer_id
+    - event_type
+    - product_id
+    - search_query
+    - event_timestamp
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: session_id
+    data_type: string
+    semantic_role: identifier
+    description: Web, app, POS, kiosk, or analytics session identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Customer primary identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Customer
+    - Stripe Customer
+    - QuickBooks Customer
+    requirement_level: conditional_required
+    required_when: &id071
+    - authenticated browsing, customer journey stitching, personalization, or churn prediction is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: event_type
+    data_type: enum
+    semantic_role: categorical
+    description: Behavior event type such as view_item, search, add_to_cart, checkout, purchase, refund, or click.
+    nullable: false
+    sensitivity: standard
+    source_system_hints:
+    - GA4 ecommerce recommended events
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: product_id
+    data_type: string
+    semantic_role: identifier
+    description: Product, catalog item, SKU group, plan, asset, or service identifier.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Product
+    - QuickBooks Item
+    - SAP Commerce Product
+    requirement_level: conditional_required
+    required_when: &id072
+    - product view, add-to-cart, search result click, recommendation, or merchandising analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: search_query
+    data_type: string
+    semantic_role: attribute
+    description: Search term, query text, keyword, filter text, or onsite search phrase.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id073
+    - onsite search, zero-result search, intent mining, or search conversion analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: event_timestamp
+    data_type: timestamp
+    semantic_role: timestamp
+    description: Timestamp of a behavioral event.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  requirement_policy:
+    universal_required_fields:
+    - session_id
+    - event_type
+    - event_timestamp
+    conditional_required_fields:
+    - field: customer_id
+      required_when: *id071
+    - field: product_id
+      required_when: *id072
+    - field: search_query
+      required_when: *id073
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: PAYMENT
+  purpose: 'Payment processing and reconciliation: authorizations, captures, tenders, settlements, payouts, disputes, and
+    gateway references.'
+  row_grain: one row per payment authorization/capture/settlement record
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - SaaS subscription
+  - subscription box
+  - membership
+  - digital goods
+  - rental/bookings
+  covers:
+  - payments
+  - settlement
+  - reconciliation
+  - gateway charges
+  - captures
+  - authorizations
+  entity_recognition:
+    table_name_patterns:
+    - payments
+    - charges
+    - payment_intents
+    - captures
+    - settlements
+    - payouts
+    - tenders
+    - reconciliation
+    - gateway_transactions
+    positive_column_signals:
+    - payment_id
+    - transaction_id
+    - payment_method
+    - payment_status
+    - payment_amount
+    - settlement_status
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: payment_id
+    data_type: string
+    semantic_role: identifier
+    description: Payment, charge, payment intent, authorization, capture, settlement, or tender identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints:
+    - Stripe PaymentIntent
+    - Stripe Charge
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: transaction_id
+    data_type: string
+    semantic_role: identifier
+    description: Commercial transaction identifier covering orders, invoices, bookings, charges, or subscription billings.
+    nullable: true
+    sensitivity: standard
+    source_system_hints:
+    - Shopify Order
+    - Stripe PaymentIntent
+    - QuickBooks Invoice
+    requirement_level: conditional_required
+    required_when: &id074
+    - payment must reconcile to order/transaction revenue
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: payment_method
+    data_type: string
+    semantic_role: attribute
+    description: Payment method such as card, bank transfer, wallet, BNPL, COD, store credit, gift card, or ACH.
+    nullable: true
+    sensitivity: payment_sensitive
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id075
+    - payment mix, fee optimization, fraud, or customer preference analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: payment_status
+    data_type: enum
+    semantic_role: categorical
+    description: Payment lifecycle status such as authorized, captured, paid, failed, disputed, refunded, voided, or settled.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id076
+    - authorization/capture/refund/failure/dunning workflow is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: payment_amount
+    data_type: decimal
+    semantic_role: measure
+    description: Payment, charge, authorized, captured, or settled amount.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id077
+    - settlement, reconciliation, refund, or payment success reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: settlement_status
+    data_type: enum
+    semantic_role: categorical
+    description: Settlement or reconciliation state such as pending, settled, paid_out, reconciled, disputed, or failed.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id078
+    - gateway settlement, payout, accounting, or reconciliation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - payment_id
+    conditional_required_fields:
+    - field: transaction_id
+      required_when: *id074
+    - field: payment_method
+      required_when: *id075
+    - field: payment_status
+      required_when: *id076
+    - field: payment_amount
+      required_when: *id077
+    - field: settlement_status
+      required_when: *id078
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: SUPPLIER
+  purpose: 'Upstream supply party and procurement terms: supplier, manufacturer, distributor, dropshipper, MOQ, and lead time.'
+  row_grain: one row per supplier/procurement source
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - subscription box
+  - dropshipping
+  covers:
+  - dropshipping
+  - procurement
+  - MOQ
+  - supplier lead time
+  - manufacturer
+  entity_recognition:
+    table_name_patterns:
+    - suppliers
+    - vendors
+    - manufacturers
+    - distributors
+    - procurement
+    - purchase_sources
+    - dropshippers
+    positive_column_signals:
+    - supplier_id
+    - supplier_name
+    - lead_time_days
+    - minimum_order_quantity
+    relationship_hints:
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, and FULFILLMENT.
+    - Use amount/status/date clusters to separate header tables from detail/event tables.
+    common_false_positives: []
+  fields:
+  - name: supplier_id
+    data_type: string
+    semantic_role: identifier
+    description: Supplier, vendor, dropshipper, procurement source, or manufacturer identifier.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: supplier_name
+    data_type: string
+    semantic_role: attribute
+    description: Supplier, manufacturer, distributor, dropshipper, wholesaler, or procurement partner name.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id079
+    - supplier performance, procurement reporting, or dropship vendor display is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: lead_time_days
+    data_type: integer
+    semantic_role: attribute
+    description: Expected procurement, replenishment, manufacturing, or dropship lead time in days.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id080
+    - replenishment planning, procurement SLA, or safety stock calculation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: minimum_order_quantity
+    data_type: decimal
+    semantic_role: measure
+    description: Supplier MOQ or minimum purchase quantity.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id081
+    - MOQ, wholesale procurement, or reorder optimization is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - supplier_id
+    conditional_required_fields:
+    - field: supplier_name
+      required_when: *id079
+    - field: lead_time_days
+      required_when: *id080
+    - field: minimum_order_quantity
+      required_when: *id081
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: STORE_CHANNEL
+  purpose: Storefront, channel, sales touchpoint, marketplace listing source, POS location, app, or region used to sell products.
+  row_grain: one row per selling store/channel/location combination
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - social commerce
+  - POS retail
+  - multi-region commerce
+  covers:
+  - web store
+  - mobile app
+  - POS store
+  - marketplace channel
+  - social commerce channel
+  - B2B portal
+  - sales region
+  entity_recognition:
+    table_name_patterns:
+    - stores
+    - channels
+    - sales_channels
+    - storefronts
+    - locations
+    - shops
+    - marketplaces
+    - pos_locations
+    - regions
+    - sales_sources
+    positive_column_signals:
+    - store_id
+    - channel_id
+    - channel_type
+    - platform_name
+    - store_name
+    - currency
+    - timezone
+    relationship_hints: &id088
+    - Look for primary keys ending in _id or external_id.
+    - Look for foreign keys shared with CUSTOMER, PRODUCT, TRANSACTION, ORDER_LINE, PAYMENT, STORE_CHANNEL, ADDRESS_LOCATION,
+      and FULFILLMENT.
+    - Use amount/status/date clusters to separate header, line, dimension, bridge, and event tables.
+    common_false_positives: []
+  fields:
+  - name: store_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical store id for store channel records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: channel_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical channel id for store channel records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id082
+    - multiple channels, marketplace, social commerce, POS, app, web, or sales reps are used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: store_name
+    data_type: string
+    semantic_role: attribute
+    description: Canonical store name for store channel records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: recommended
+    required_when: []
+    missing_strategy: do not block ingestion; use for better matching, segmentation, and analytics quality when available
+  - name: channel_type
+    data_type: string
+    semantic_role: classification
+    description: Canonical channel type for store channel records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id083
+    - channel segmentation, marketplace/POS/web/app/store comparison is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: platform_name
+    data_type: string
+    semantic_role: attribute
+    description: Canonical platform name for store channel records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id084
+    - Shopify, WooCommerce, Amazon, eBay, POS, ERP, or custom platform identification is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: region
+    data_type: string
+    semantic_role: location
+    description: Canonical region for store channel records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id085
+    - regional store/channel reporting, tax, pricing, or fulfillment routing is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: currency
+    data_type: string
+    semantic_role: attribute
+    description: Canonical currency for store channel records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id086
+    - multi-currency channel reporting or accounting is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: timezone
+    data_type: string
+    semantic_role: location
+    description: Canonical timezone for store channel records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: is_active
+    data_type: boolean
+    semantic_role: policy_or_flag
+    description: Canonical is active for store channel records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id087
+    - channel activation, store lifecycle, or source availability control is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - store_id
+    conditional_required_fields:
+    - field: channel_id
+      required_when: *id082
+    - field: channel_type
+      required_when: *id083
+    - field: platform_name
+      required_when: *id084
+    - field: region
+      required_when: *id085
+    - field: currency
+      required_when: *id086
+    - field: is_active
+      required_when: *id087
+    recommended_fields:
+    - store_name
+    optional_fields:
+    - timezone
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: ADDRESS_LOCATION
+  purpose: Normalized address and location table for customer, billing, shipping, warehouse, pickup, seller, and tax jurisdictions.
+  row_grain: one row per physical or virtual address/location identity
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - rental/bookings
+  - dropshipping
+  - global commerce
+  covers:
+  - billing address
+  - shipping address
+  - pickup address
+  - tax jurisdiction
+  - warehouse location
+  - customer location
+  - seller address
+  entity_recognition:
+    table_name_patterns:
+    - addresses
+    - address_book
+    - locations
+    - customer_addresses
+    - shipping_addresses
+    - billing_addresses
+    - geo_locations
+    - jurisdictions
+    positive_column_signals:
+    - address_id
+    - customer_id
+    - address_type
+    - postal_code
+    - country_code
+    - latitude
+    - longitude
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: address_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical address id for address location records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical customer id for address location records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id089
+    - address belongs to customer profile or account book
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: order_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical order id for address location records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id090
+    - address belongs to order billing/shipping/tax/fulfillment context
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: address_type
+    data_type: string
+    semantic_role: classification
+    description: Canonical address type for address location records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id091
+    - billing, shipping, pickup, warehouse, supplier, or store address distinction is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: address_line_1
+    data_type: string
+    semantic_role: location
+    description: Canonical address line 1 for address location records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id092
+    - delivery, billing, tax, warehouse, or supplier address is required
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: address_line_2
+    data_type: string
+    semantic_role: location
+    description: Canonical address line 2 for address location records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: city
+    data_type: string
+    semantic_role: location
+    description: Canonical city for address location records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id093
+    - shipping zones, tax, localization, or regional reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: state_region
+    data_type: string
+    semantic_role: location
+    description: Canonical state region for address location records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id094
+    - tax nexus, shipping zones, address validation, or regional reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: postal_code
+    data_type: string
+    semantic_role: location
+    description: Canonical postal code for address location records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id095
+    - shipping rates, tax, geocoding, routing, or address validation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: country_code
+    data_type: string
+    semantic_role: location
+    description: Canonical country code for address location records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id096
+    - cross-border sales, tax, GDPR/region, shipping, or currency logic is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: latitude
+    data_type: string
+    semantic_role: location
+    description: Canonical latitude for address location records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: longitude
+    data_type: string
+    semantic_role: location
+    description: Canonical longitude for address location records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: is_default
+    data_type: boolean
+    semantic_role: policy_or_flag
+    description: Canonical is default for address location records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  requirement_policy:
+    universal_required_fields:
+    - address_id
+    conditional_required_fields:
+    - field: customer_id
+      required_when: *id089
+    - field: order_id
+      required_when: *id090
+    - field: address_type
+      required_when: *id091
+    - field: address_line_1
+      required_when: *id092
+    - field: city
+      required_when: *id093
+    - field: state_region
+      required_when: *id094
+    - field: postal_code
+      required_when: *id095
+    - field: country_code
+      required_when: *id096
+    recommended_fields: []
+    optional_fields:
+    - address_line_2
+    - latitude
+    - longitude
+    - is_default
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: CART_CHECKOUT
+  purpose: Pre-purchase cart and checkout lifecycle including active carts, abandoned checkouts, recovery, and completed checkout
+    conversion.
+  row_grain: one row per cart or checkout session
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - subscription box
+  - digital goods
+  - replenishment commerce
+  covers:
+  - cart
+  - basket
+  - checkout
+  - abandoned checkout
+  - checkout recovery
+  - pre-order purchase intent
+  entity_recognition:
+    table_name_patterns:
+    - carts
+    - cart
+    - checkouts
+    - checkout
+    - baskets
+    - shopping_carts
+    - abandoned_checkouts
+    - checkout_sessions
+    positive_column_signals:
+    - cart_id
+    - checkout_id
+    - customer_id
+    - session_id
+    - cart_status
+    - checkout_status
+    - cart_value_amount
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: cart_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical cart id for cart checkout records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: checkout_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical checkout id for cart checkout records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id097
+    - checkout flow, abandoned checkout, payment attempt, or conversion funnel is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical customer id for cart checkout records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id098
+    - logged-in cart, customer journey, personalization, or abandoned cart recovery is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: session_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical session id for cart checkout records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id099
+    - anonymous browsing, web analytics, or funnel stitching is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: cart_status
+    data_type: string
+    semantic_role: classification
+    description: Canonical cart status for cart checkout records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id100
+    - cart lifecycle, abandoned/active/converted status is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: checkout_status
+    data_type: string
+    semantic_role: classification
+    description: Canonical checkout status for cart checkout records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id101
+    - checkout started, payment pending, completed, abandoned, or failed status is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: created_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical created at for cart checkout records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id102
+    - funnel timing, abandoned cart window, or cohort analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: abandoned_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical abandoned at for cart checkout records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id103
+    - abandoned cart recovery, remarketing, or funnel leakage analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: completed_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical completed at for cart checkout records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id104
+    - conversion timing or checkout-to-order linkage is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: cart_value_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical cart value amount for cart checkout records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id105
+    - cart value, abandoned revenue, or conversion opportunity analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: item_count
+    data_type: integer
+    semantic_role: attribute
+    description: Canonical item count for cart checkout records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id106
+    - basket size, cart composition, or checkout friction analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - cart_id
+    conditional_required_fields:
+    - field: checkout_id
+      required_when: *id097
+    - field: customer_id
+      required_when: *id098
+    - field: session_id
+      required_when: *id099
+    - field: cart_status
+      required_when: *id100
+    - field: checkout_status
+      required_when: *id101
+    - field: created_at
+      required_when: *id102
+    - field: abandoned_at
+      required_when: *id103
+    - field: completed_at
+      required_when: *id104
+    - field: cart_value_amount
+      required_when: *id105
+    - field: item_count
+      required_when: *id106
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: QUOTE_DRAFT_ORDER
+  purpose: B2B quote, negotiated offer, draft order, proforma invoice, or assisted-sales order before final transaction creation.
+  row_grain: one row per quote or draft order header
+  business_types:
+  - B2B wholesale
+  - services commerce
+  - rental/bookings
+  - high-ticket retail
+  - assisted sales
+  - custom manufacturing
+  covers:
+  - quote
+  - draft order
+  - proforma invoice
+  - sales quote
+  - negotiated order
+  - assisted checkout
+  entity_recognition:
+    table_name_patterns:
+    - quotes
+    - draft_orders
+    - drafts
+    - estimates
+    - proforma_invoices
+    - sales_quotes
+    - negotiated_orders
+    positive_column_signals:
+    - quote_id
+    - draft_order_id
+    - customer_id
+    - sales_rep_id
+    - quote_status
+    - valid_until
+    - quoted_total_amount
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: quote_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical quote id for quote draft order records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: draft_order_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical draft order id for quote draft order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id107
+    - Shopify draft order, manual order, sales-assisted order, or quote-to-order conversion is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical customer id for quote draft order records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id108
+    - B2B account, sales rep, contract pricing, or customer-specific quote is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: sales_rep_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical sales rep id for quote draft order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id109
+    - sales-assisted commerce, B2B negotiation, or rep performance reporting is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quote_status
+    data_type: string
+    semantic_role: classification
+    description: Canonical quote status for quote draft order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id110
+    - quote lifecycle, approval, accepted/rejected/expired flow is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: valid_until
+    data_type: date
+    semantic_role: time
+    description: Canonical valid until for quote draft order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id111
+    - quote expiry, SLA, or sales follow-up is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quoted_subtotal_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical quoted subtotal amount for quote draft order records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id112
+    - quote financial comparison or discount/tax split is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quoted_discount_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical quoted discount amount for quote draft order records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id113
+    - negotiated discount, B2B pricing, or quote margin analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quoted_tax_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical quoted tax amount for quote draft order records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id114
+    - quote tax estimate or invoice conversion is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quoted_total_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical quoted total amount for quote draft order records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id115
+    - quote value, pipeline, approval, or conversion reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - quote_id
+    conditional_required_fields:
+    - field: draft_order_id
+      required_when: *id107
+    - field: customer_id
+      required_when: *id108
+    - field: sales_rep_id
+      required_when: *id109
+    - field: quote_status
+      required_when: *id110
+    - field: valid_until
+      required_when: *id111
+    - field: quoted_subtotal_amount
+      required_when: *id112
+    - field: quoted_discount_amount
+      required_when: *id113
+    - field: quoted_tax_amount
+      required_when: *id114
+    - field: quoted_total_amount
+      required_when: *id115
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: TAX
+  purpose: Tax lines, rates, jurisdictions, VAT/GST/sales-tax amounts, exemptions, and tax reconciliation detail.
+  row_grain: one row per tax calculation or tax line
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - digital goods
+  - cross-border commerce
+  - global commerce
+  covers:
+  - sales tax
+  - VAT
+  - GST
+  - tax line
+  - tax jurisdiction
+  - tax exemption
+  - tax reporting
+  entity_recognition:
+    table_name_patterns:
+    - taxes
+    - tax_lines
+    - tax_details
+    - vat
+    - gst
+    - sales_tax
+    - tax_jurisdictions
+    - tax_rates
+    positive_column_signals:
+    - tax_id
+    - order_id
+    - order_line_id
+    - jurisdiction
+    - tax_type
+    - tax_rate
+    - tax_amount
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: tax_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical tax id for tax records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: order_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical order id for tax records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id116
+    - tax is calculated at order/invoice level
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: order_line_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical order line id for tax records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id117
+    - line-level tax, product tax class, or tax audit is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: jurisdiction
+    data_type: string
+    semantic_role: attribute
+    description: Canonical jurisdiction for tax records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id118
+    - sales tax, VAT/GST, tax nexus, or regional tax reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: tax_type
+    data_type: string
+    semantic_role: classification
+    description: Canonical tax type for tax records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id119
+    - VAT, GST, sales tax, duty, marketplace tax, or exemption reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: tax_rate
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical tax rate for tax records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id120
+    - tax calculation validation or tax engine reconciliation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: taxable_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical taxable amount for tax records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id121
+    - tax base validation, exemption, or tax audit is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: tax_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical tax amount for tax records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id122
+    - tax reporting, accounting, invoice, or payment reconciliation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: exemption_code
+    data_type: string
+    semantic_role: attribute
+    description: Canonical exemption code for tax records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id123
+    - B2B exemption, nonprofit exemption, tax certificate, or zero-rated sales are used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - tax_id
+    conditional_required_fields:
+    - field: order_id
+      required_when: *id116
+    - field: order_line_id
+      required_when: *id117
+    - field: jurisdiction
+      required_when: *id118
+    - field: tax_type
+      required_when: *id119
+    - field: tax_rate
+      required_when: *id120
+    - field: taxable_amount
+      required_when: *id121
+    - field: tax_amount
+      required_when: *id122
+    - field: exemption_code
+      required_when: *id123
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: PROMOTION_REDEMPTION
+  purpose: Actual usage of coupon, campaign, referral, voucher, or promotion at customer/order level.
+  row_grain: one row per promotion redemption event
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - marketplace
+  - subscription box
+  - loyalty-led commerce
+  - social commerce
+  covers:
+  - coupon redemption
+  - voucher use
+  - referral conversion
+  - promotion usage
+  - discount attribution
+  entity_recognition:
+    table_name_patterns:
+    - promotion_redemptions
+    - coupon_redemptions
+    - discount_applications
+    - voucher_redemptions
+    - referral_redemptions
+    - promo_usage
+    positive_column_signals:
+    - redemption_id
+    - campaign_id
+    - coupon_code
+    - customer_id
+    - order_id
+    - discount_amount
+    - redeemed_at
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: redemption_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical redemption id for promotion redemption records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: campaign_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical campaign id for promotion redemption records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id124
+    - redemption should link to marketing campaign or promotion definition
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: coupon_code
+    data_type: string
+    semantic_role: attribute
+    description: Canonical coupon code for promotion redemption records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id125
+    - coupon/voucher/promo-code redemption is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical customer id for promotion redemption records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id126
+    - customer-level promotion usage, abuse detection, or loyalty targeting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: order_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical order id for promotion redemption records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id127
+    - discount must reconcile to transaction/order revenue
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: redemption_status
+    data_type: string
+    semantic_role: classification
+    description: Canonical redemption status for promotion redemption records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id128
+    - attempted, successful, voided, expired, or reversed redemption flow is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: discount_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical discount amount for promotion redemption records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id129
+    - campaign cost, margin leakage, or net revenue reconciliation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: redeemed_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical redeemed at for promotion redemption records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id130
+    - campaign timing, redemption window, or attribution analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: attribution_source
+    data_type: string
+    semantic_role: attribute
+    description: Canonical attribution source for promotion redemption records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id131
+    - marketing channel/source attribution for promotions is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - redemption_id
+    conditional_required_fields:
+    - field: campaign_id
+      required_when: *id124
+    - field: coupon_code
+      required_when: *id125
+    - field: customer_id
+      required_when: *id126
+    - field: order_id
+      required_when: *id127
+    - field: redemption_status
+      required_when: *id128
+    - field: discount_amount
+      required_when: *id129
+    - field: redeemed_at
+      required_when: *id130
+    - field: attribution_source
+      required_when: *id131
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: GIFT_CARD_STORE_CREDIT
+  purpose: Gift cards, store credit, wallet credit, refund credit, cashback balance, and customer account credit liability.
+  row_grain: one row per credit account, gift card, or stored value instrument
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - marketplace
+  - loyalty-led commerce
+  - subscription box
+  - digital goods
+  covers:
+  - gift card
+  - store credit
+  - wallet credit
+  - refund credit
+  - cashback balance
+  - stored value
+  entity_recognition:
+    table_name_patterns:
+    - gift_cards
+    - store_credits
+    - wallets
+    - customer_credit
+    - account_credit
+    - cashback_wallets
+    - stored_value
+    positive_column_signals:
+    - credit_account_id
+    - gift_card_id
+    - customer_id
+    - issued_amount
+    - current_balance
+    - credit_type
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: credit_account_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical credit account id for gift card store credit records.
+    nullable: false
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: gift_card_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical gift card id for gift card store credit records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id132
+    - gift card, voucher, prepaid balance, or certificate product is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical customer id for gift card store credit records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id133
+    - credit balance belongs to a known customer/account
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: issued_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical issued amount for gift card store credit records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id134
+    - liability tracking, gift card sales, or credit issuance reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: current_balance
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical current balance for gift card store credit records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id135
+    - available credit, liability, breakage, or redemption reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: credit_type
+    data_type: string
+    semantic_role: classification
+    description: Canonical credit type for gift card store credit records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id136
+    - gift card, refund credit, store credit, cashback, or manual adjustment classification is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: issued_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical issued at for gift card store credit records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id137
+    - liability aging, expiry, or credit lifecycle reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: expires_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical expires at for gift card store credit records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id138
+    - expiry, breakage, or regulatory compliance is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: last_redeemed_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical last redeemed at for gift card store credit records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  requirement_policy:
+    universal_required_fields:
+    - credit_account_id
+    conditional_required_fields:
+    - field: gift_card_id
+      required_when: *id132
+    - field: customer_id
+      required_when: *id133
+    - field: issued_amount
+      required_when: *id134
+    - field: current_balance
+      required_when: *id135
+    - field: credit_type
+      required_when: *id136
+    - field: issued_at
+      required_when: *id137
+    - field: expires_at
+      required_when: *id138
+    recommended_fields: []
+    optional_fields:
+    - last_redeemed_at
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: WAREHOUSE_STOCK_MOVEMENT
+  purpose: Warehouse, bin, stock movement, inventory adjustment, receiving, transfer, reservation, and audit trail.
+  row_grain: one row per warehouse location or stock movement event depending on source grain
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - dropshipping
+  - replenishment commerce
+  - 3PL commerce
+  covers:
+  - warehouse
+  - bin location
+  - stock movement
+  - inventory adjustment
+  - receiving
+  - transfer
+  - reservation
+  entity_recognition:
+    table_name_patterns:
+    - warehouses
+    - stock_movements
+    - inventory_movements
+    - stock_ledger
+    - inventory_adjustments
+    - receipts
+    - transfers
+    - bins
+    positive_column_signals:
+    - warehouse_id
+    - movement_id
+    - product_id
+    - variant_id
+    - movement_type
+    - quantity_delta
+    - movement_timestamp
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: warehouse_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical warehouse id for warehouse stock movement records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id139
+    - warehouse, store, 3PL, dark store, or stock location operations are used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: movement_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical movement id for warehouse stock movement records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: product_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical product id for warehouse stock movement records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id140
+    - stock movement must link to product catalog
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: variant_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical variant id for warehouse stock movement records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id141
+    - SKU/variant-level inventory movements are tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: location_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical location id for warehouse stock movement records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id142
+    - bin, shelf, store, warehouse zone, or stock location is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: movement_type
+    data_type: string
+    semantic_role: classification
+    description: Canonical movement type for warehouse stock movement records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id143
+    - receipt, sale, return, adjustment, transfer, damage, or shrinkage classification is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quantity_delta
+    data_type: integer
+    semantic_role: attribute
+    description: Canonical quantity delta for warehouse stock movement records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id144
+    - inventory movement, stock adjustment, or audit trail is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quantity_after
+    data_type: integer
+    semantic_role: attribute
+    description: Canonical quantity after for warehouse stock movement records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: movement_reason
+    data_type: string
+    semantic_role: classification
+    description: Canonical movement reason for warehouse stock movement records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  - name: movement_timestamp
+    data_type: datetime
+    semantic_role: time
+    description: Canonical movement timestamp for warehouse stock movement records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id145
+    - inventory ledger, audit, reorder, or operational timeline is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - movement_id
+    conditional_required_fields:
+    - field: warehouse_id
+      required_when: *id139
+    - field: product_id
+      required_when: *id140
+    - field: variant_id
+      required_when: *id141
+    - field: location_id
+      required_when: *id142
+    - field: movement_type
+      required_when: *id143
+    - field: quantity_delta
+      required_when: *id144
+    - field: movement_timestamp
+      required_when: *id145
+    recommended_fields: []
+    optional_fields:
+    - quantity_after
+    - movement_reason
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: PURCHASE_ORDER
+  purpose: Supplier purchase order, replenishment order, dropship purchase, inbound receiving, and procurement performance.
+  row_grain: one row per supplier purchase order or purchase order line depending on source grain
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - dropshipping
+  - replenishment commerce
+  - custom manufacturing
+  covers:
+  - purchase order
+  - supplier order
+  - procurement
+  - inbound receiving
+  - dropship order
+  - replenishment order
+  entity_recognition:
+    table_name_patterns:
+    - purchase_orders
+    - po
+    - pos
+    - supplier_orders
+    - procurement_orders
+    - inbound_orders
+    - receipts
+    - dropship_orders
+    positive_column_signals:
+    - purchase_order_id
+    - supplier_id
+    - warehouse_id
+    - po_status
+    - ordered_at
+    - expected_receipt_date
+    - received_quantity
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: purchase_order_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical purchase order id for purchase order records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: supplier_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical supplier id for purchase order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id146
+    - procurement, replenishment, dropshipping, or supplier performance is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: warehouse_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical warehouse id for purchase order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id147
+    - PO is received into warehouse, store, 3PL, or stock location
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: po_status
+    data_type: string
+    semantic_role: classification
+    description: Canonical po status for purchase order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id148
+    - PO lifecycle, approval, sent, partially received, closed, or cancelled tracking is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: ordered_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical ordered at for purchase order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id149
+    - procurement lead time, purchasing timeline, or inventory planning is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: expected_receipt_date
+    data_type: date
+    semantic_role: time
+    description: Canonical expected receipt date for purchase order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id150
+    - replenishment forecast, stockout prevention, or vendor SLA is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: received_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical received at for purchase order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id151
+    - actual lead time, receiving SLA, or supplier performance is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: ordered_quantity
+    data_type: integer
+    semantic_role: attribute
+    description: Canonical ordered quantity for purchase order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id152
+    - purchase quantity, MOQ, replenishment, or cost planning is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: received_quantity
+    data_type: integer
+    semantic_role: attribute
+    description: Canonical received quantity for purchase order records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id153
+    - receiving reconciliation, shortage, overage, or inventory receipt is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: purchase_cost_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical purchase cost amount for purchase order records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id154
+    - landed cost, margin, PO value, or supplier cost tracking is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - purchase_order_id
+    conditional_required_fields:
+    - field: supplier_id
+      required_when: *id146
+    - field: warehouse_id
+      required_when: *id147
+    - field: po_status
+      required_when: *id148
+    - field: ordered_at
+      required_when: *id149
+    - field: expected_receipt_date
+      required_when: *id150
+    - field: received_at
+      required_when: *id151
+    - field: ordered_quantity
+      required_when: *id152
+    - field: received_quantity
+      required_when: *id153
+    - field: purchase_cost_amount
+      required_when: *id154
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: PAYOUT_PLATFORM_FEE
+  purpose: Marketplace or payment payout, seller settlement, platform commission, processing fee, reserve, and reconciliation.
+  row_grain: one row per payout, seller settlement, or platform fee record
+  business_types:
+  - marketplace
+  - multi-vendor commerce
+  - DTC retail
+  - omnichannel retail
+  - creator commerce
+  - payment-led commerce
+  covers:
+  - seller payout
+  - platform fee
+  - commission
+  - merchant settlement
+  - payment settlement
+  - processor fee
+  entity_recognition:
+    table_name_patterns:
+    - payouts
+    - seller_payouts
+    - settlements
+    - platform_fees
+    - commissions
+    - merchant_settlements
+    - processor_fees
+    positive_column_signals:
+    - payout_id
+    - seller_id
+    - transaction_id
+    - payment_id
+    - payout_status
+    - payout_amount
+    - platform_fee_amount
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: payout_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical payout id for payout platform fee records.
+    nullable: false
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: seller_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical seller id for payout platform fee records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id155
+    - marketplace seller, vendor payout, or commission reporting is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: transaction_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical transaction id for payout platform fee records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id156
+    - seller payout must reconcile to order/transaction revenue
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: payment_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical payment id for payout platform fee records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id157
+    - gateway settlement or payout reconciliation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: payout_status
+    data_type: string
+    semantic_role: classification
+    description: Canonical payout status for payout platform fee records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id158
+    - pending, paid, failed, reversed, or held payout workflow is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: payout_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical payout amount for payout platform fee records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id159
+    - seller settlement, marketplace payable, or remittance reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: platform_fee_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical platform fee amount for payout platform fee records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id160
+    - platform fee revenue, fee reconciliation, or marketplace margin is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: commission_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical commission amount for payout platform fee records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id161
+    - commission revenue, seller contract, or take-rate reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: settlement_currency
+    data_type: string
+    semantic_role: attribute
+    description: Canonical settlement currency for payout platform fee records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id162
+    - multi-currency payout or FX reconciliation is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: paid_out_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical paid out at for payout platform fee records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id163
+    - payout aging, seller SLA, or settlement date reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - payout_id
+    conditional_required_fields:
+    - field: seller_id
+      required_when: *id155
+    - field: transaction_id
+      required_when: *id156
+    - field: payment_id
+      required_when: *id157
+    - field: payout_status
+      required_when: *id158
+    - field: payout_amount
+      required_when: *id159
+    - field: platform_fee_amount
+      required_when: *id160
+    - field: commission_amount
+      required_when: *id161
+    - field: settlement_currency
+      required_when: *id162
+    - field: paid_out_at
+      required_when: *id163
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: DISPUTE_CHARGEBACK
+  purpose: Payment dispute, chargeback, fraud claim, retrieval request, evidence lifecycle, and dispute outcome.
+  row_grain: one row per dispute or chargeback case
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - marketplace
+  - digital goods
+  - subscription box
+  - SaaS subscription
+  covers:
+  - dispute
+  - chargeback
+  - fraud claim
+  - payment reversal
+  - retrieval request
+  - evidence case
+  entity_recognition:
+    table_name_patterns:
+    - disputes
+    - chargebacks
+    - payment_disputes
+    - fraud_claims
+    - retrieval_requests
+    - reversals
+    positive_column_signals:
+    - dispute_id
+    - payment_id
+    - order_id
+    - customer_id
+    - dispute_status
+    - dispute_reason
+    - disputed_amount
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: dispute_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical dispute id for dispute chargeback records.
+    nullable: false
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: payment_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical payment id for dispute chargeback records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id164
+    - chargeback must reconcile to payment gateway or payment record
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: order_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical order id for dispute chargeback records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id165
+    - dispute should connect to order, fulfillment, or customer purchase
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical customer id for dispute chargeback records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id166
+    - customer risk, fraud, support, or repeat dispute analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: dispute_status
+    data_type: string
+    semantic_role: classification
+    description: Canonical dispute status for dispute chargeback records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id167
+    - open, under_review, won, lost, accepted, or reversed dispute lifecycle is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: dispute_reason
+    data_type: string
+    semantic_role: classification
+    description: Canonical dispute reason for dispute chargeback records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id168
+    - fraud, product_not_received, duplicate, credit_not_processed, or customer reason analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: disputed_amount
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical disputed amount for dispute chargeback records.
+    nullable: true
+    sensitivity: financial
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id169
+    - financial exposure, reserve, or loss reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: evidence_due_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical evidence due at for dispute chargeback records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id170
+    - chargeback evidence workflow or deadline alerting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: resolved_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical resolved at for dispute chargeback records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id171
+    - dispute aging, resolution SLA, or finance reconciliation is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: outcome
+    data_type: string
+    semantic_role: classification
+    description: Canonical outcome for dispute chargeback records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id172
+    - won/lost/accepted/reversed outcome reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - dispute_id
+    conditional_required_fields:
+    - field: payment_id
+      required_when: *id164
+    - field: order_id
+      required_when: *id165
+    - field: customer_id
+      required_when: *id166
+    - field: dispute_status
+      required_when: *id167
+    - field: dispute_reason
+      required_when: *id168
+    - field: disputed_amount
+      required_when: *id169
+    - field: evidence_due_at
+      required_when: *id170
+    - field: resolved_at
+      required_when: *id171
+    - field: outcome
+      required_when: *id172
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: SUPPORT_TICKET
+  purpose: Customer service tickets, complaints, returns support, delivery issues, product questions, and support satisfaction.
+  row_grain: one row per support case or ticket
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - subscription box
+  - digital goods
+  - SaaS subscription
+  covers:
+  - support ticket
+  - case
+  - complaint
+  - delivery issue
+  - returns support
+  - customer service conversation
+  entity_recognition:
+    table_name_patterns:
+    - tickets
+    - support_tickets
+    - cases
+    - customer_service
+    - helpdesk
+    - complaints
+    - support_cases
+    - zendesk_tickets
+    positive_column_signals:
+    - ticket_id
+    - customer_id
+    - order_id
+    - ticket_status
+    - issue_category
+    - priority
+    - opened_at
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: ticket_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical ticket id for support ticket records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical customer id for support ticket records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id173
+    - support is linked to customer profile or account
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: order_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical order id for support ticket records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id174
+    - support issue relates to order, fulfillment, return, or payment
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: ticket_status
+    data_type: string
+    semantic_role: classification
+    description: Canonical ticket status for support ticket records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id175
+    - open, pending, solved, closed, escalated lifecycle is tracked
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: issue_category
+    data_type: string
+    semantic_role: classification
+    description: Canonical issue category for support ticket records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id176
+    - support root cause, product issue, delivery issue, payment issue, or return reason analysis is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: priority
+    data_type: string
+    semantic_role: classification
+    description: Canonical priority for support ticket records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id177
+    - SLA, escalation, or operational workload reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: assigned_agent_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical assigned agent id for support ticket records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id178
+    - agent performance, routing, or ownership reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: opened_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical opened at for support ticket records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id179
+    - SLA, ticket aging, response time, or support volume trend is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: resolved_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical resolved at for support ticket records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id180
+    - resolution time, SLA, or customer experience reporting is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: satisfaction_score
+    data_type: decimal
+    semantic_role: attribute
+    description: Canonical satisfaction score for support ticket records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  requirement_policy:
+    universal_required_fields:
+    - ticket_id
+    conditional_required_fields:
+    - field: customer_id
+      required_when: *id173
+    - field: order_id
+      required_when: *id174
+    - field: ticket_status
+      required_when: *id175
+    - field: issue_category
+      required_when: *id176
+    - field: priority
+      required_when: *id177
+    - field: assigned_agent_id
+      required_when: *id178
+    - field: opened_at
+      required_when: *id179
+    - field: resolved_at
+      required_when: *id180
+    recommended_fields: []
+    optional_fields:
+    - satisfaction_score
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: CONSENT_MARKETING_OPT_IN
+  purpose: Customer consent, GDPR/CCPA preference, email/SMS/push opt-in, lawful basis, and marketing suppression policy.
+  row_grain: one row per customer consent/preference state or consent event
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - marketplace
+  - subscription box
+  - digital goods
+  - global commerce
+  covers:
+  - marketing consent
+  - GDPR consent
+  - email opt-in
+  - SMS opt-in
+  - push opt-in
+  - privacy preference
+  - suppression list
+  entity_recognition:
+    table_name_patterns:
+    - consents
+    - marketing_preferences
+    - communication_preferences
+    - gdpr_consent
+    - opt_ins
+    - privacy_preferences
+    - suppression_lists
+    positive_column_signals:
+    - consent_id
+    - customer_id
+    - email_opt_in
+    - sms_opt_in
+    - gdpr_consent_status
+    - consent_timestamp
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: consent_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical consent id for consent marketing opt in records.
+    nullable: false
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: customer_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical customer id for consent marketing opt in records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id181
+    - consent belongs to a known customer, subscriber, or account
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: email_opt_in
+    data_type: boolean
+    semantic_role: policy_or_flag
+    description: Canonical email opt in for consent marketing opt in records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id182
+    - email marketing, newsletter, lifecycle messaging, or consent audit is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: sms_opt_in
+    data_type: boolean
+    semantic_role: policy_or_flag
+    description: Canonical sms opt in for consent marketing opt in records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id183
+    - SMS, WhatsApp, mobile messaging, or phone-based campaigns are used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: push_opt_in
+    data_type: boolean
+    semantic_role: policy_or_flag
+    description: Canonical push opt in for consent marketing opt in records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id184
+    - mobile app/web push notifications are used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: gdpr_consent_status
+    data_type: string
+    semantic_role: classification
+    description: Canonical gdpr consent status for consent marketing opt in records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id185
+    - GDPR, CCPA, PECR, LGPD, privacy, or explicit consent compliance is in scope
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: consent_source
+    data_type: string
+    semantic_role: policy_or_flag
+    description: Canonical consent source for consent marketing opt in records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id186
+    - audit trail, source attribution, popup/form/POS/import consent source is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: consent_timestamp
+    data_type: datetime
+    semantic_role: time
+    description: Canonical consent timestamp for consent marketing opt in records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id187
+    - regulatory audit, consent history, or opt-in recency is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: consent_revoked_at
+    data_type: datetime
+    semantic_role: time
+    description: Canonical consent revoked at for consent marketing opt in records.
+    nullable: true
+    sensitivity: pii_or_compliance
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id188
+    - unsubscribe, opt-out, erasure, or consent withdrawal audit is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  requirement_policy:
+    universal_required_fields:
+    - consent_id
+    conditional_required_fields:
+    - field: customer_id
+      required_when: *id181
+    - field: email_opt_in
+      required_when: *id182
+    - field: sms_opt_in
+      required_when: *id183
+    - field: push_opt_in
+      required_when: *id184
+    - field: gdpr_consent_status
+      required_when: *id185
+    - field: consent_source
+      required_when: *id186
+    - field: consent_timestamp
+      required_when: *id187
+    - field: consent_revoked_at
+      required_when: *id188
+    recommended_fields: []
+    optional_fields: []
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+- entity: BUNDLE_COMPONENT
+  purpose: Bill-of-materials style mapping between bundle/kit/box products and their component SKUs for pricing, margin, and
+    inventory explosion.
+  row_grain: one row per bundle-to-component relationship
+  business_types:
+  - DTC retail
+  - omnichannel retail
+  - B2B wholesale
+  - subscription box
+  - marketplace
+  - custom bundles
+  - kits
+  covers:
+  - bundle component
+  - kit component
+  - box item
+  - BOM
+  - component SKU
+  - assembled product
+  entity_recognition:
+    table_name_patterns:
+    - bundle_components
+    - kit_components
+    - bom
+    - product_bom
+    - bundle_items
+    - component_skus
+    - box_components
+    positive_column_signals:
+    - bundle_id
+    - component_product_id
+    - component_variant_id
+    - quantity_required
+    - component_role
+    relationship_hints: *id088
+    common_false_positives: []
+  fields:
+  - name: bundle_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical bundle id for bundle component records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: component_product_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical component product id for bundle component records.
+    nullable: false
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: universal_required
+    required_when:
+    - always required for this canonical entity row grain
+    missing_strategy: generate a stable surrogate/composite key if the source lacks a single ID
+  - name: component_variant_id
+    data_type: string
+    semantic_role: identifier
+    description: Canonical component variant id for bundle component records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id189
+    - bundle component is variant/SKU specific
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: quantity_required
+    data_type: integer
+    semantic_role: attribute
+    description: Canonical quantity required for bundle component records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id190
+    - kit assembly, inventory explosion, bundle COGS, or fulfillment component pick list is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: component_role
+    data_type: string
+    semantic_role: classification
+    description: Canonical component role for bundle component records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id191
+    - core/optional/add-on/free-gift/packaging component logic is used
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: allocation_price
+    data_type: decimal
+    semantic_role: monetary_or_numeric_measure
+    description: Canonical allocation price for bundle component records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: conditional_required
+    required_when: &id192
+    - bundle revenue allocation, margin, tax, or refund split is needed
+    missing_strategy: required only when condition is active; otherwise mark not_applicable
+  - name: is_optional
+    data_type: boolean
+    semantic_role: policy_or_flag
+    description: Canonical is optional for bundle component records.
+    nullable: true
+    sensitivity: standard
+    source_system_hints: []
+    requirement_level: optional
+    required_when: []
+    missing_strategy: optional enrichment; do not block mapping if absent
+  requirement_policy:
+    universal_required_fields:
+    - bundle_id
+    - component_product_id
+    conditional_required_fields:
+    - field: component_variant_id
+      required_when: *id189
+    - field: quantity_required
+      required_when: *id190
+    - field: component_role
+      required_when: *id191
+    - field: allocation_price
+      required_when: *id192
+    recommended_fields: []
+    optional_fields:
+    - is_optional
+    field_presence_logic: Evaluate universal fields first, then apply conditional fields only when the business context condition
+      is true. Do not enforce this entity as if every field is globally mandatory.
+relationship_model:
+- from_entity: TRANSACTION
+  from_field: customer_id
+  to_entity: CUSTOMER
+  to_field: customer_id
+  relationship: many_to_one
+- from_entity: ORDER_LINE
+  from_field: order_id
+  to_entity: TRANSACTION
+  to_field: order_id
+  relationship: many_to_one
+- from_entity: ORDER_LINE
+  from_field: product_id
+  to_entity: PRODUCT
+  to_field: product_id
+  relationship: many_to_one
+- from_entity: INVENTORY
+  from_field: product_id
+  to_entity: PRODUCT
+  to_field: product_id
+  relationship: many_to_one
+- from_entity: SUBSCRIPTION
+  from_field: customer_id
+  to_entity: CUSTOMER
+  to_field: customer_id
+  relationship: many_to_one
+- from_entity: PAYMENT
+  from_field: transaction_id
+  to_entity: TRANSACTION
+  to_field: transaction_id
+  relationship: many_to_one
+- from_entity: FULFILLMENT
+  from_field: order_id
+  to_entity: TRANSACTION
+  to_field: order_id
+  relationship: many_to_one
+- from_entity: RETURN
+  from_field: order_id
+  to_entity: TRANSACTION
+  to_field: order_id
+  relationship: many_to_one
+- from_entity: REVIEW
+  from_field: customer_id
+  to_entity: CUSTOMER
+  to_field: customer_id
+  relationship: many_to_one
+- from_entity: SESSION_BEHAVIOR
+  from_field: customer_id
+  to_entity: CUSTOMER
+  to_field: customer_id
+  relationship: many_to_one_optional
+- from_entity: PRODUCT
+  from_field: supplier_id
+  to_entity: SUPPLIER
+  to_field: supplier_id
+  relationship: many_to_one
+- from_entity: PRODUCT
+  from_field: supplier_id
+  to_entity: MARKETPLACE_SELLER
+  to_field: seller_id
+  relationship: many_to_one_when_marketplace
+recognition_hints:
+  entity_recognition:
+    strategy: Score each source table against every canonical entity using table name patterns, positive column signals, primary/foreign
+      key structure, amount/date/status clusters, and relationship hints.
+    recommended_entity_score_features:
+    - table_name_similarity
+    - column_name_keyword_overlap
+    - primary_key_pattern
+    - foreign_key_links
+    - amount_field_presence
+    - timestamp_field_presence
+    - status_enum_presence
+    - row_grain_inference
+    - sample_value_regex
+    - cardinality_profile
+    - relationship_graph_context
+    confidence_thresholds:
+      high_confidence: 0.82
+      medium_confidence: 0.62
+      needs_human_review: 0.45
+  field_recognition:
+    strategy: Map source columns to canonical fields using exact aliases, normalized aliases, fuzzy matching, data type checks,
+      sample value patterns, entity context, and known source-system vocabulary.
+    recommended_field_score_features:
+    - exact_alias_match
+    - normalized_alias_match
+    - token_similarity
+    - abbreviation_match
+    - data_type_match
+    - sample_value_pattern
+    - entity_context_match
+    - unit_or_currency_context
+    - null_rate_and_cardinality
+    - nearby_column_context
+    use_keyword_file: ecommerce_keywords.json
+requirement_model:
+  principle: No canonical field is enforced globally unless it is needed to identify the row grain. All other requirements
+    depend on business model, product type, channel, fulfillment model, analytics goal, or regulatory context.
+  requirement_levels:
+    universal_required: Needed for the canonical entity row grain. If missing, generate a stable surrogate/composite key before
+      production use.
+    conditional_required: Required only when the matching business context, use case, metric, workflow, or compliance need
+      is enabled.
+    recommended: Strongly useful for analytics quality, matching, segmentation, and explainability, but not mandatory for
+      every business.
+    optional: Useful enrichment field. Do not block ingestion or mapping when missing.
+  business_context_inputs:
+  - business_type
+  - product_type
+  - sales_channel_model
+  - marketplace_model
+  - subscription_model
+  - fulfillment_model
+  - inventory_model
+  - payment_model
+  - tax_region_model
+  - marketing_model
+  - support_model
+  - analytics_goals
+  blocking_policy:
+    block_when_missing:
+    - universal_required fields with no reliable source key or surrogate key strategy
+    - conditional_required fields when the matching condition is active and the downstream workflow/metric depends on it
+    do_not_block_when_missing:
+    - conditional_required fields where the condition is not active
+    - recommended fields
+    - optional fields
+  missing_field_resolution_order:
+  - look_for_exact_or_synonym_match_in_keywords_yaml
+  - look_for foreign key or relationship-based equivalent
+  - derive from source fields if deterministic
+  - generate stable surrogate key for identifier-only gaps
+  - ask business clarifying question if the field affects an enabled metric/workflow
+  - mark not_applicable when the business context proves the field is irrelevant

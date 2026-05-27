@@ -1,0 +1,815 @@
+rules_pack_name: ecommerce_mapping_and_user_recommendation_rules
+version: 3.0.0-user-level-personalization
+purpose: Rules used by the engine to map raw ecommerce data, resolve entity/field ambiguity, validate data quality, build
+  recommender features, generate candidate products per user, rank personalized product recommendations, and serve saved recommendations
+  through an API. These rules generate recommendations for each customer/session, not business-consulting recommendations.
+rule_execution_order:
+- profile_tables_and_columns
+- recognize_entities
+- infer_business_context
+- resolve_field_requirement_policy
+- recognize_fields
+- resolve_conflicts
+- validate_data_quality
+- build_recommender_feature_tables
+- generate_candidate_items_per_user
+- apply_recommendation_eligibility_filters
+- rank_recommendations_per_user
+- apply_diversity_and_safety_reranking
+- save_recommendations_for_api_serving
+- ask_clarifying_questions_only_when_needed
+entity_recognition_rules:
+- id: ER_001
+  name: table_name_signal
+  logic: Score table names using exact, normalized, plural/singular, abbreviation, and domain synonym matches.
+  weight: 0.3
+- id: ER_002
+  name: column_cluster_signal
+  logic: Score table identity based on column groups, e.g. customer_id/email/name -> CUSTOMER, order_id/total/date/status
+    -> TRANSACTION.
+  weight: 0.45
+- id: ER_003
+  name: relationship_signal
+  logic: Use primary keys, foreign keys, repeated identifiers, and row-count ratios to distinguish header, line, dimension,
+    and event tables.
+  weight: 0.2
+- id: ER_004
+  name: value_distribution_signal
+  logic: Use value patterns such as emails, SKU-like strings, currency amounts, timestamps, status enums, event names, and
+    tracking numbers.
+  weight: 0.05
+- id: ER_005
+  name: advanced_ecommerce_entity_clusters
+  logic: Recognize advanced operational tables using column clusters such as channel/store/currency, address/postcode/country,
+    checkout/cart/session, tax/jurisdiction/rate, payout/fee/seller, dispute/chargeback/evidence, consent/opt-in, and bundle/component/quantity.
+  weight: 0.12
+field_recognition_rules:
+- id: FR_001
+  name: exact_canonical_match
+  priority: 1
+  logic: Map exact canonical field names before fuzzy matching.
+  confidence: 0.99
+- id: FR_002
+  name: known_synonym_match
+  priority: 2
+  logic: Use keywords.yaml synonyms with case, underscore, camelCase, punctuation, and language-normalized matching.
+  confidence: 0.85_to_0.98
+- id: FR_003
+  name: semantic_context_match
+  priority: 3
+  logic: Increase confidence when field synonym matches the already recognized entity, e.g. id in PRODUCT table means product_id
+    more than customer_id.
+  confidence: 0.75_to_0.94
+- id: FR_004
+  name: value_pattern_match
+  priority: 4
+  logic: Use sampled values to detect email, phone, country, amount, quantity, timestamp, SKU, status, rating, URL, tracking
+    number, and coupon patterns.
+  confidence: 0.60_to_0.90
+- id: FR_005
+  name: ambiguous_id_rule
+  priority: 5
+  logic: A column called id should map to the current table entity primary key unless foreign-key context is stronger.
+  confidence: contextual
+conflict_resolution_rules:
+- id: CR_001
+  name: same_column_multiple_fields
+  logic: Choose the mapping with highest combined score from name, entity context, value pattern, and relationship graph.
+    Keep alternatives as candidates.
+  ask_question_if: top_two_scores_within_0.08
+- id: CR_002
+  name: same_field_multiple_columns
+  logic: Prefer non-null, stable, unique, source-system-generated fields over display labels or derived fields.
+  ask_question_if: two_columns_have_similar_quality_and_business_meaning_differs
+- id: CR_003
+  name: gross_vs_net_money_fields
+  logic: Do not assume amount means revenue. Classify amount fields into subtotal, discount, tax, shipping, total, refund,
+    payment, fee, payout, or cost.
+  ask_question_if: revenue_metric_requested_and_policy_unknown
+- id: CR_004
+  name: order_table_priority
+  logic: Tables named 'orders' or 'order' should be prioritized as TRANSACTION (sales) rather than PURCHASE_ORDER (procurement) unless columns like 'supplier_id' or 'vendor' are present.
+- id: CR_007
+  name: primary_id_priority
+  logic: Columns named exactly 'id', 'uuid', or 'pk' within a specific table MUST be mapped to the Primary Identifier of that canonical entity (e.g., fulfillment.id -> FULFILLMENT.fulfillment_id).
+- id: CR_008
+  name: revenue_vs_metrics_priority
+  logic: Columns named 'revenue' should be mapped to TRANSACTION.total_amount or ORDER_LINE.line_total_amount before being mapped to derived metrics like CUSTOMER.lifetime_value.
+- id: CR_005
+  name: product_vs_variant
+  logic: If product_id repeats across SKUs, use variant_id or sku as the sellable item grain for product performance and inventory.
+  ask_question_if: sku_variant_relationship_unclear
+- id: CR_006
+  name: header_line_event_bridge_resolution
+  logic: 'When a source table has mixed identifiers, classify it as header, line, event, bridge, or ledger by grain: one row
+    per order/customer/product vs. one row per event, component, movement, tax line, payout, or redemption.'
+- id: CR_006
+  name: avoid_false_required_fields
+  logic: If a field is missing but its required_when condition is inactive, classify it as not_applicable rather than missing_required.
+    Do not create false data-quality failures for SaaS, digital goods, guest checkout, marketplace, or service models.
+feature_metric_rules:
+- id: FM_001
+  name: user_purchase_affinity_features
+  purpose: Build customer preference signals from historical purchases.
+  required_fields:
+  - customer_id
+  - product_id
+  - order_date
+  - quantity
+  optional_fields:
+  - category
+  - subcategory
+  - brand
+  - price
+  - discount_amount
+  logic: For each user, calculate preferred categories, brands, price bands, purchase frequency, recency, and repeat purchase
+    patterns.
+  used_by:
+  - collaborative_filtering
+  - category_affinity_recommendations
+  - post_purchase_recommendations
+- id: FM_002
+  name: session_intent_features
+  purpose: Build short-term intent from browsing, search, cart, and checkout behavior.
+  required_fields:
+  - session_id
+  - event_type
+  - event_timestamp
+  optional_fields:
+  - customer_id
+  - product_id
+  - search_query
+  - category
+  - cart_id
+  logic: Give strongest weight to recent views, searches, add-to-cart, checkout-started, wishlist, and repeat views in the
+    current session.
+  used_by:
+  - homepage_recommendations
+  - product_detail_recommendations
+  - cart_recommendations
+  - anonymous_user_recommendations
+- id: FM_003
+  name: product_similarity_features
+  purpose: Create item-to-item similarity for similar-product and complementary-product recommendations.
+  required_fields:
+  - product_id
+  optional_fields:
+  - category
+  - subcategory
+  - brand
+  - title
+  - description
+  - price
+  - tags
+  - rating_score
+  logic: Combine category, brand, text, price-band, attribute, co-view, co-cart, and co-purchase similarity. Use content similarity
+    when interaction data is sparse.
+  used_by:
+  - similar_items
+  - frequently_bought_together
+  - cold_start_products
+- id: FM_004
+  name: replenishment_cycle_features
+  purpose: Recommend repeat-purchase products when the user is likely to need them again.
+  required_fields:
+  - customer_id
+  - product_id
+  - order_date
+  optional_fields:
+  - quantity
+  - category
+  - product_type
+  - subscription_status
+  logic: Estimate product-level and user-level repurchase interval. Trigger replenishment candidates shortly before expected
+    next purchase date.
+  used_by:
+  - replenishment_recommendations
+  - subscription_recommendations
+- id: FM_005
+  name: negative_feedback_features
+  purpose: Avoid recommending products the user likely dislikes or had a bad experience with.
+  required_fields:
+  - customer_id
+  - product_id
+  optional_fields:
+  - return_id
+  - return_reason
+  - rating_score
+  - support_ticket_id
+  - dispute_id
+  logic: Create negative signals from returns, refunds, low ratings, complaints, cancellations, chargebacks, and repeated
+    ignored recommendations.
+  used_by:
+  - eligibility_filters
+  - ranking_penalties
+- id: FM_006
+  name: availability_and_merchandising_features
+  purpose: Prevent invalid recommendations and prioritize available products.
+  required_fields:
+  - product_id
+  optional_fields:
+  - variant_id
+  - quantity_available
+  - inventory_policy
+  - product_status
+  - country
+  - channel_id
+  - price
+  - currency
+  logic: Attach product availability, sellable status, channel eligibility, location eligibility, price, and currency to every
+    candidate item before ranking.
+  used_by:
+  - eligibility_filters
+  - serving_api
+recommender_objectives:
+  primary_output: ranked_items_per_user
+  recommendation_grain: customer_id when known, otherwise anonymous_session_id or device/session identity
+  item_grain: variant_id when SKU-level inventory/pricing exists, otherwise product_id
+  supported_surfaces:
+  - homepage
+  - product_detail_page
+  - cart
+  - checkout
+  - post_purchase
+  - email
+  - push_notification
+  - search_results
+  - zero_results_search
+  - category_page
+  - account_page
+  optimization_goals:
+  - increase_click_probability
+  - increase_add_to_cart_probability
+  - increase_purchase_probability
+  - improve repeat purchase
+  - improve relevance
+  - maintain diversity
+  - avoid invalid or unsafe products
+  non_goal: Do not generate business advice such as pricing actions, supplier actions, channel actions, or operational recommendations.
+recommendation_context_resolution_rules:
+- id: RC_001
+  name: known_user_identity_first
+  logic: If customer_id is available, generate recommendations at customer_id level and merge known session behavior into
+    that user profile.
+  priority: 1
+- id: RC_002
+  name: anonymous_session_fallback
+  logic: If customer_id is missing, generate short-session recommendations from session_id, device_id, cart_id, search_query,
+    and recent product views.
+  priority: 2
+- id: RC_003
+  name: surface_specific_intent
+  logic: 'Use the recommendation surface to decide candidate mix: product-detail favors similar/complementary items, cart
+    favors add-ons, homepage favors hybrid personalization, search favors query-relevant items.'
+  priority: 3
+- id: RC_004
+  name: business_type_conditioning
+  logic: Activate subscription, replenishment, marketplace, digital-product, rental, B2B, or omnichannel rules only when the
+    tenant business context supports them.
+  priority: 4
+candidate_generation_rules:
+- id: CG_001
+  name: similar_to_recent_views
+  candidate_source: product similarity index
+  trigger: user has viewed, searched, wishlisted, or added products to cart recently
+  required_fields:
+  - product_id
+  optional_fields:
+  - session_id
+  - customer_id
+  - category
+  - brand
+  - price
+  - description
+  use_for:
+  - homepage
+  - product_detail_page
+  - cart
+  - anonymous_session
+- id: CG_002
+  name: frequently_bought_together
+  candidate_source: order_line co-purchase graph
+  trigger: user has cart items, recent purchase, or current product detail item
+  required_fields:
+  - order_id
+  - product_id
+  optional_fields:
+  - variant_id
+  - quantity
+  - category
+  use_for:
+  - product_detail_page
+  - cart
+  - post_purchase
+- id: CG_003
+  name: collaborative_filtering_candidates
+  candidate_source: user-item interaction matrix
+  trigger: tenant has enough historical users and interactions
+  required_fields:
+  - customer_id
+  - product_id
+  optional_fields:
+  - event_type
+  - quantity
+  - order_date
+  - rating_score
+  use_for:
+  - homepage
+  - account_page
+  - email
+- id: CG_004
+  name: category_and_brand_affinity_candidates
+  candidate_source: user category/brand preference profile
+  trigger: user has repeat activity in categories, subcategories, brands, or price bands
+  required_fields:
+  - customer_id
+  - product_id
+  optional_fields:
+  - category
+  - subcategory
+  - brand
+  - price
+  use_for:
+  - homepage
+  - category_page
+  - email
+- id: CG_005
+  name: replenishment_candidates
+  candidate_source: repeat purchase cycle model
+  trigger: product is consumable, repeatable, subscription-like, or has known purchase interval
+  required_fields:
+  - customer_id
+  - product_id
+  - order_date
+  optional_fields:
+  - quantity
+  - category
+  - subscription_status
+  use_for:
+  - homepage
+  - email
+  - push_notification
+  - account_page
+- id: CG_006
+  name: trending_and_popular_candidates
+  candidate_source: recent sales/views/add-to-cart trend table
+  trigger: new user, sparse user history, anonymous session, or fallback needed
+  required_fields:
+  - product_id
+  optional_fields:
+  - category
+  - channel_id
+  - country
+  - event_timestamp
+  - quantity
+  use_for:
+  - cold_start
+  - homepage
+  - category_page
+  - zero_results_search
+- id: CG_007
+  name: search_query_candidates
+  candidate_source: search/query-product relevance index
+  trigger: search_query exists or zero-results search needs recovery
+  required_fields:
+  - search_query
+  optional_fields:
+  - product_id
+  - category
+  - title
+  - description
+  - tags
+  use_for:
+  - search_results
+  - zero_results_search
+- id: CG_008
+  name: bundle_component_candidates
+  candidate_source: bundle/component mapping and co-purchase graph
+  trigger: current item is part of a bundle, kit, box, or accessory relationship
+  required_fields:
+  - bundle_product_id
+  - component_product_id
+  optional_fields:
+  - component_quantity
+  - category
+  - price
+  use_for:
+  - product_detail_page
+  - cart
+  - post_purchase
+eligibility_filter_rules:
+- id: EF_001
+  name: exclude_inactive_or_deleted_products
+  logic: Do not recommend products where product_status is inactive, archived, deleted, draft, hidden, blocked, or not sellable.
+  severity: block
+- id: EF_002
+  name: exclude_out_of_stock_products
+  logic: Do not recommend out-of-stock variants unless inventory_policy explicitly allows backorder/preorder and the surface
+    supports it.
+  severity: block
+- id: EF_003
+  name: exclude_unavailable_channel_or_country
+  logic: Do not recommend products unavailable for the user country, region, currency, store, marketplace, sales channel,
+    or delivery location.
+  severity: block
+- id: EF_004
+  name: exclude_recently_purchased_non_repeat_products
+  logic: Do not recommend products the user already bought recently unless product_type is consumable, replenishable, subscription,
+    giftable, replacement, or repeatable.
+  severity: block_or_penalty
+- id: EF_005
+  name: exclude_negative_user_feedback_items
+  logic: Penalize or block products the user returned, refunded, rated poorly, complained about, cancelled, or repeatedly
+    ignored.
+  severity: penalty_or_block
+- id: EF_006
+  name: exclude_duplicate_variants
+  logic: Avoid showing multiple variants of the same parent product unless the recommendation surface is a variant selector.
+  severity: rerank
+- id: EF_007
+  name: respect_age_compliance_and_restricted_products
+  logic: Block restricted products unless eligibility signals prove the user is allowed to view/buy them.
+  severity: block
+- id: EF_008
+  name: respect_consent_for_outbound_marketing
+  logic: For email, SMS, push, or paid-audience export recommendations, only include users with active consent and exclude
+    revoked/suppressed contacts.
+  severity: block
+- id: EF_009
+  name: seller_quality_and_availability_filter
+  logic: For marketplace tenants, block products from suspended, inactive, unavailable, or policy-violating sellers.
+  severity: block
+- id: EF_010
+  name: valid_price_currency_filter
+  logic: Do not recommend items without a valid price/currency for the target channel unless the tenant supports quote-only
+    or B2B negotiated pricing.
+  severity: block
+ranking_rules:
+- id: RK_001
+  name: default_hybrid_ranking_formula
+  formula: final_score = 0.35 * personalization_score + 0.20 * short_term_intent_score + 0.15 * item_similarity_score + 0.10
+    * popularity_score + 0.08 * availability_score + 0.05 * freshness_score + 0.04 * rating_quality_score + 0.03 * optional_business_weight
+  logic: Use this when tenant has enough user behavior, product catalog, and availability data.
+- id: RK_002
+  name: anonymous_session_ranking_formula
+  formula: final_score = 0.35 * short_term_intent_score + 0.25 * item_similarity_score + 0.20 * popularity_score + 0.10 *
+    availability_score + 0.05 * freshness_score + 0.05 * rating_quality_score
+  logic: Use when customer_id is unknown but recent session behavior exists.
+- id: RK_003
+  name: cold_start_ranking_formula
+  formula: final_score = 0.35 * popularity_score + 0.20 * trending_score + 0.15 * category_context_score + 0.10 * availability_score
+    + 0.10 * rating_quality_score + 0.05 * freshness_score + 0.05 * diversity_score
+  logic: Use for new users, new tenants, or sparse data.
+- id: RK_004
+  name: price_affinity_adjustment
+  logic: Boost products inside the user preferred price band. Penalize products far outside the user price band unless premium
+    upsell behavior exists.
+- id: RK_005
+  name: discount_affinity_adjustment
+  logic: If user is discount-sensitive, boost eligible discounted products. If user buys full-price frequently, avoid over-weighting
+    discounts.
+- id: RK_006
+  name: replenishment_due_boost
+  logic: Boost replenishable products when predicted_next_purchase_date is near or overdue.
+diversity_and_reranking_rules:
+- id: DR_001
+  name: category_diversity
+  logic: Avoid filling all top-K slots with the same category unless the surface is category-specific.
+- id: DR_002
+  name: brand_diversity
+  logic: Limit repeated brands in top-K unless user shows strong brand loyalty.
+- id: DR_003
+  name: exploration_slot
+  logic: Reserve a small number of slots for high-quality new, trending, or adjacent-category items.
+- id: DR_004
+  name: variant_collapse
+  logic: Collapse variants into the best sellable variant for list surfaces; expose variants only on product pages.
+- id: DR_005
+  name: surface_specific_mix
+  logic: Homepage should mix personalized, trending, replenishment, and exploration. Cart should favor complementary add-ons.
+    PDP should favor similar and frequently-bought-together items.
+recommendation_rules:
+- id: UREC_001
+  name: homepage_personalized_products
+  trigger: customer_id is known and user has purchase, view, cart, wishlist, or search history
+  candidate_generators:
+  - CG_001
+  - CG_003
+  - CG_004
+  - CG_005
+  - CG_006
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_004
+  - EF_005
+  - EF_006
+  ranking: RK_001
+  output: Top-N personalized products for the user homepage.
+- id: UREC_002
+  name: anonymous_homepage_recommendations
+  trigger: customer_id is missing but session_id, search_query, viewed_product_id, channel, or category context exists
+  candidate_generators:
+  - CG_001
+  - CG_006
+  - CG_007
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_006
+  ranking: RK_002
+  output: Session-personalized products for anonymous users.
+- id: UREC_003
+  name: product_detail_similar_items
+  trigger: user is viewing a product detail page
+  candidate_generators:
+  - CG_001
+  - CG_002
+  - CG_008
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_006
+  ranking: RK_001
+  output: Similar, complementary, and frequently-bought-together products.
+- id: UREC_004
+  name: cart_cross_sell_and_add_on
+  trigger: cart has one or more items
+  candidate_generators:
+  - CG_002
+  - CG_008
+  - CG_001
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_006
+  ranking: RK_001
+  output: Add-ons, accessories, bundles, or complementary products for the current cart.
+- id: UREC_005
+  name: post_purchase_next_best_item
+  trigger: user completed a purchase
+  candidate_generators:
+  - CG_002
+  - CG_004
+  - CG_005
+  - CG_008
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_004
+  - EF_005
+  ranking: RK_001
+  output: Next-best products after purchase, including accessories, refills, and related items.
+- id: UREC_006
+  name: replenishment_recommendations
+  trigger: predicted_next_purchase_date is near or overdue for a replenishable product
+  candidate_generators:
+  - CG_005
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_005
+  ranking: RK_006
+  output: Products the user is likely to need again.
+- id: UREC_007
+  name: search_intent_recommendations
+  trigger: user submits search_query or zero-results query
+  candidate_generators:
+  - CG_007
+  - CG_001
+  - CG_006
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  ranking: RK_002
+  output: Products relevant to the user search intent.
+- id: UREC_008
+  name: price_sensitive_user_recommendations
+  trigger: user has high discount usage rate, low average price band, coupon behavior, or sale-only purchases
+  candidate_generators:
+  - CG_003
+  - CG_004
+  - CG_006
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_005
+  ranking:
+  - RK_001
+  - RK_004
+  - RK_005
+  output: Relevant products inside the user price/discount preference range.
+- id: UREC_009
+  name: premium_upsell_recommendations
+  trigger: user has high AOV, premium brand affinity, low discount dependency, or high-value customer segment
+  candidate_generators:
+  - CG_003
+  - CG_004
+  - CG_001
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_005
+  ranking:
+  - RK_001
+  - RK_004
+  output: Higher-quality or premium alternatives relevant to user preferences.
+- id: UREC_010
+  name: subscription_or_membership_next_offer
+  trigger: tenant has subscription, membership, plan, box, replenishment, or digital recurring product model
+  candidate_generators:
+  - CG_004
+  - CG_005
+  - CG_001
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_005
+  ranking: RK_001
+  output: Plans, refills, bundles, upgrades, or related subscription products relevant to the user.
+- id: UREC_011
+  name: loyalty_reward_aware_recommendations
+  trigger: user has loyalty_account_id, points_balance, rewards, cashback, or tier benefits
+  candidate_generators:
+  - CG_003
+  - CG_004
+  - CG_006
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_005
+  ranking: RK_001
+  output: Products relevant to the user that can use points, rewards, cashback, or tier offers.
+- id: UREC_012
+  name: cold_start_new_user_recommendations
+  trigger: new user or tenant has sparse user history
+  candidate_generators:
+  - CG_006
+  - CG_007
+  - CG_001
+  filters:
+  - EF_001
+  - EF_002
+  - EF_003
+  - EF_006
+  ranking: RK_003
+  output: Trending, popular, high-quality, and context-aware products for cold-start users.
+fallback_rules:
+- id: FB_001
+  name: fallback_to_session_context
+  when: customer_id recommendations unavailable
+  logic: Use current session views, cart, search query, category page, channel, country, and device context.
+- id: FB_002
+  name: fallback_to_category_popularity
+  when: no usable user or session history
+  logic: Recommend popular/trending products in the current category, channel, country, or store.
+- id: FB_003
+  name: fallback_to_global_trending
+  when: no context is available
+  logic: Recommend globally popular/trending in-stock products with strong quality signals.
+- id: FB_004
+  name: fallback_to_content_similarity
+  when: not enough user-item interactions exist
+  logic: Use product metadata similarity from title, description, category, brand, tags, and price band.
+serving_rules:
+- id: SRV_001
+  name: batch_precompute_default
+  logic: Default mode is batch scoring. Save top-N recommendations per user and per surface after daily or scheduled training.
+- id: SRV_002
+  name: fast_api_lookup
+  logic: Serving API should return precomputed recommendations by tenant_id, user_id/session_id, surface, channel, and locale
+    without retraining in request time.
+- id: SRV_003
+  name: real_time_context_rerank_optional
+  logic: Optionally rerank precomputed candidates using live session/cart/search context when low-latency feature access is
+    available.
+- id: SRV_004
+  name: expiry_and_refresh
+  logic: Each recommendation item must have generated_at, expires_at, model_version, and rule_version so stale results can
+    be refreshed.
+- id: SRV_005
+  name: explainability_reason_codes
+  logic: Return simple reason_code values such as similar_to_viewed, often_bought_together, popular_in_category, replenishment_due,
+    price_match, trending_now.
+per_user_recommendation_output_contract:
+  required_top_level_fields:
+  - request_id
+  - tenant_id
+  - user_key
+  - user_key_type
+  - recommendation_surface
+  - generated_at
+  - model_version
+  - rule_version
+  - items
+  user_key_type_values:
+  - customer_id
+  - anonymous_session_id
+  - device_id
+  - cart_id
+  required_item_fields:
+  - rank
+  - product_id
+  - score
+  - reason_code
+  - strategy
+  - eligibility_status
+  recommended_item_fields:
+  - variant_id
+  - title
+  - category
+  - brand
+  - price
+  - currency
+  - image_url
+  - product_url
+  - stock_status
+  - reason_text
+  - expires_at
+  confidence_formula: final_score * mapping_confidence * data_quality_score * availability_score * freshness_score
+  example:
+    tenant_id: brand_001
+    user_key: cust_123
+    user_key_type: customer_id
+    recommendation_surface: homepage
+    items:
+    - rank: 1
+      product_id: prod_1001
+      variant_id: var_1001_red_m
+      score: 0.94
+      reason_code: similar_to_recent_views
+      reason_text: Similar to products you viewed recently
+      strategy: hybrid_personalized
+      eligibility_status: passed
+advanced_entity_handling:
+  treat_customer_and_session_as_user_identity_sources: true
+  treat_transaction_and_order_line_as_purchase_interactions: true
+  treat_session_behavior_as_view_search_cart_intent: true
+  treat_inventory_as_recommendation_availability_guardrail: true
+  treat_address_location_store_channel_as_serving_context: true
+  treat_return_review_support_dispute_as_negative_feedback_or_quality_signals: true
+  treat_bundle_component_as_complementary_recommendation_graph: true
+  respect_consent_before_outbound_recommendation_delivery: true
+  do_not_use_tax_payout_purchase_order_as_direct_user_recommendation_targets: true
+business_context_resolution:
+  inputs:
+  - merchant-selected business type
+  - detected entities
+  - column patterns
+  - source system
+  - enabled metrics
+  - enabled workflows
+  outputs:
+  - business_type
+  - product_type
+  - sales_channel_model
+  - marketplace_model
+  - subscription_model
+  - fulfillment_model
+  - inventory_model
+  - payment_model
+  - tax_region_model
+  - marketing_model
+  - support_model
+  - recommendation_surfaces
+  - identity_model
+  - item_grain
+  - recommendation_goals
+  default_policy: If context is unknown, use safe cold-start and session-context recommendations; ask only when identity,
+    item grain, availability, or compliance ambiguity could cause bad recommendations.
+requirement_resolution_rules:
+- id: RR_001
+  name: universal_identifier_first
+  logic: For each recognized entity, require only schema.requirement_policy.universal_required_fields as the base mapping
+    contract. If the source lacks a direct key, generate a stable surrogate/composite key from deterministic fields.
+- id: RR_002
+  name: conditional_fields_by_business_context
+  logic: Activate conditional_required_fields only when business_type, product_type, channel, workflow, metric, or compliance
+    context matches the field required_when statements.
+- id: RR_003
+  name: recommended_fields_are_quality_boosters
+  logic: Missing recommended fields should lower quality/completeness score but must not block mapping, ingestion, or entity
+    recognition.
+- id: RR_004
+  name: optional_fields_are_enrichment_only
+  logic: Optional fields may improve personalization, segmentation, or advanced analytics but are never required for a generic
+    ecommerce source.
+- id: RR_005
+  name: metric_driven_requirement_activation
+  logic: When a metric is enabled, activate only the fields listed in metrics.yaml uses_fields for that metric and the join
+    keys needed to compute it. Other fields remain recommended/optional.
+- id: RR_006
+  name: workflow_driven_requirement_activation
+  logic: When a workflow is enabled, such as fulfillment, tax, returns, payout, disputes, or consent, activate the fields
+    needed for that workflow only for related business models.

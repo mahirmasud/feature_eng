@@ -1,0 +1,400 @@
+question_pack_name: ecommerce_clarifying_questions
+version: 2.2.0-business-conditional-requirements
+purpose: Questions to ask when automatic entity/field recognition has low confidence or when business logic affects metric
+  definitions. Includes requirement-context questions used to decide which fields are truly required.
+when_to_ask:
+  entity_confidence_below: 0.72
+  field_confidence_below: 0.78
+  multiple_possible_mappings: true
+  metric_requires_business_policy: true
+  never_ask_when: A high-confidence exact mapping exists and the business policy is not needed for the requested output.
+question_groups:
+- group: business_model
+  questions:
+  - id: Q_BM_001
+    question: 'Which ecommerce model do you run: DTC retail, B2B wholesale, marketplace, subscription, digital goods, rental/bookings,
+      or mixed?'
+    answer_type: multi_select
+    maps_to:
+    - business_types_supported
+    - entity_prioritization
+  - id: Q_BM_002
+    question: Do you sell through one store, multiple storefronts, marketplaces, POS, social commerce, or sales reps?
+    answer_type: multi_select
+    maps_to:
+    - TRANSACTION.sales_channel
+    - MARKETING.attribution_source
+  - id: Q_BM_003
+    question: Should reports use gross sales, net sales, collected payments, booked invoices, or fulfilled orders as the main
+      revenue source?
+    answer_type: single_select
+    maps_to:
+    - metrics.net_revenue
+    - PAYMENT
+    - TRANSACTION
+- group: customer_identity
+  questions:
+  - id: Q_CUST_001
+    question: 'What is the best stable customer key: customer_id, account_id, email, phone, loyalty ID, CRM contact ID, or
+      anonymous/session ID?'
+    answer_type: single_select
+    maps_to:
+    - CUSTOMER.customer_id
+    - CUSTOMER.account_id
+    - SESSION_BEHAVIOR.customer_id
+  - id: Q_CUST_002
+    question: Can one customer have multiple accounts, emails, devices, stores, or B2B buyer contacts?
+    answer_type: yes_no_with_details
+    maps_to:
+    - identity_resolution_rules
+  - id: Q_CUST_003
+    question: Do you need to separate guest checkout users from registered customers?
+    answer_type: yes_no
+    maps_to:
+    - CUSTOMER.customer_type
+- group: product_catalog
+  questions:
+  - id: Q_PROD_001
+    question: Is your product grain product-level, variant-level, SKU-level, bundle-level, service-level, or subscription-plan-level?
+    answer_type: single_select
+    maps_to:
+    - PRODUCT.product_id
+    - PRODUCT.variant_id
+    - PRODUCT.sku
+  - id: Q_PROD_002
+    question: Do bundles/kits have their own SKU, or should bundle components be exploded into child order lines?
+    answer_type: single_select
+    maps_to:
+    - PRODUCT.product_type
+    - ORDER_LINE
+  - id: Q_PROD_003
+    question: Are digital products, rentals, warranties, gift cards, or services included in the same product catalog?
+    answer_type: multi_select
+    maps_to:
+    - PRODUCT.product_type
+- group: order_and_transaction_grain
+  questions:
+  - id: Q_ORD_001
+    question: Does one order create one invoice/payment, or can it create multiple invoices, partial captures, split shipments,
+      or installments?
+    answer_type: single_select
+    maps_to:
+    - TRANSACTION.order_id
+    - TRANSACTION.invoice_id
+    - PAYMENT.transaction_id
+  - id: Q_ORD_002
+    question: Should cancelled, failed, fraud, draft, or test orders be excluded from revenue metrics?
+    answer_type: yes_no_with_details
+    maps_to:
+    - TRANSACTION.transaction_status
+    - metrics.filter_policy
+  - id: Q_ORD_003
+    question: Are taxes and shipping included in total_amount, or stored separately?
+    answer_type: single_select
+    maps_to:
+    - TRANSACTION.tax_amount
+    - TRANSACTION.shipping_amount
+    - TRANSACTION.total_amount
+- group: pricing_and_promotions
+  questions:
+  - id: Q_PRICE_001
+    question: Do you use fixed pricing, customer-specific pricing, B2B price lists, bulk tiers, negotiated pricing, or dynamic
+      pricing?
+    answer_type: multi_select
+    maps_to:
+    - PRICING
+    - PRODUCT.unit_price
+  - id: Q_PRICE_002
+    question: Are discounts stored at order level, line level, coupon level, campaign level, or manually adjusted invoice
+      level?
+    answer_type: multi_select
+    maps_to:
+    - TRANSACTION.discount_amount
+    - MARKETING.coupon_code
+    - ORDER_LINE.line_total_amount
+  - id: Q_PRICE_003
+    question: Should margin use standard cost, moving average cost, landed cost, supplier cost, or manually supplied cost?
+    answer_type: single_select
+    maps_to:
+    - PRODUCT.unit_cost
+    - metrics.gross_margin_amount
+- group: inventory_and_supply
+  questions:
+  - id: Q_INV_001
+    question: Do you track inventory by warehouse, store, bin, 3PL, supplier, virtual location, or dropship vendor?
+    answer_type: multi_select
+    maps_to:
+    - INVENTORY.location_id
+    - FULFILLMENT.warehouse_id
+    - SUPPLIER
+  - id: Q_INV_002
+    question: Can inventory go negative, be backordered, be preordered, or be infinite for digital products?
+    answer_type: multi_select
+    maps_to:
+    - INVENTORY.quantity_available
+    - PRODUCT.product_type
+  - id: Q_INV_003
+    question: Do purchase orders, supplier lead times, MOQ, or replenishment rules exist in the source data?
+    answer_type: yes_no_with_details
+    maps_to:
+    - SUPPLIER.lead_time_days
+    - SUPPLIER.minimum_order_quantity
+- group: subscription_and_membership
+  questions:
+  - id: Q_SUB_001
+    question: Do subscriptions renew automatically, manually, prepaid, trial-first, usage-based, or hybrid?
+    answer_type: multi_select
+    maps_to:
+    - SUBSCRIPTION.billing_interval
+    - SUBSCRIPTION.subscription_status
+  - id: Q_SUB_002
+    question: 'What counts as churn: cancellation date, end of paid period, failed payment after dunning, downgrade, or inactivity?'
+    answer_type: single_select
+    maps_to:
+    - metrics.churn_rate
+    - SUBSCRIPTION.current_period_end
+  - id: Q_SUB_003
+    question: Do you need MRR/ARR normalization across monthly, annual, prepaid, and custom intervals?
+    answer_type: yes_no
+    maps_to:
+    - metrics.monthly_recurring_revenue
+- group: marketplace_and_seller
+  questions:
+  - id: Q_MKT_001
+    question: Do orders contain products from one seller or multiple sellers?
+    answer_type: single_select
+    maps_to:
+    - MARKETPLACE_SELLER.seller_id
+    - ORDER_LINE
+  - id: Q_MKT_002
+    question: Is revenue reported as GMV, seller payout, commission revenue, or buyer-paid total?
+    answer_type: single_select
+    maps_to:
+    - MARKETPLACE_SELLER.commission_rate
+    - PAYMENT.settlement_status
+    - metrics.net_revenue
+- group: returns_fulfillment_and_payments
+  questions:
+  - id: Q_RET_001
+    question: Are refunds, returns, exchanges, store credit, and chargebacks stored in the same table or separate tables?
+    answer_type: single_select
+    maps_to:
+    - RETURN
+    - PAYMENT.payment_status
+  - id: Q_FULL_001
+    question: Can one order have multiple shipments, partial fulfillment, local pickup, digital delivery, or failed delivery?
+    answer_type: multi_select
+    maps_to:
+    - FULFILLMENT
+    - TRANSACTION.transaction_status
+  - id: Q_PAY_001
+    question: 'Which payment truth should be used: payment authorization, capture, settlement, payout, invoice paid status,
+      or bank reconciliation?'
+    answer_type: single_select
+    maps_to:
+    - PAYMENT.payment_status
+    - PAYMENT.settlement_status
+    - TRANSACTION.transaction_status
+- group: marketing_behavior_and_attribution
+  questions:
+  - id: Q_ATTR_001
+    question: 'Which attribution model should be used: first touch, last touch, linear, platform reported, coupon-based, referral-based,
+      or custom?'
+    answer_type: single_select
+    maps_to:
+    - MARKETING.attribution_source
+    - CUSTOMER.acquisition_channel
+  - id: Q_BEH_001
+    question: Do you have clickstream/session data such as product views, search, add-to-cart, checkout, purchase, wishlist,
+      and remove-from-cart?
+    answer_type: multi_select
+    maps_to:
+    - SESSION_BEHAVIOR.event_type
+  - id: Q_REV_001
+    question: Are reviews attached to products, sellers, deliveries, orders, customer support, or the app/brand overall?
+    answer_type: multi_select
+    maps_to:
+    - REVIEW.subject_type
+    - REVIEW.subject_id
+- group: channels_stores_and_locations
+  questions:
+  - id: Q_CH_001
+    question: 'Which channels should be treated as separate businesses: website, mobile app, POS, marketplace, social commerce,
+      B2B portal, or sales rep channel?'
+    answer_type: multi_select
+    maps_to:
+    - STORE_CHANNEL.channel_type
+    - TRANSACTION.sales_channel
+    - SESSION_BEHAVIOR.channel_id
+  - id: Q_CH_002
+    question: Do stores/channels have separate currencies, tax regions, warehouses, or reporting targets?
+    answer_type: yes_no_with_details
+    maps_to:
+    - STORE_CHANNEL.currency
+    - STORE_CHANNEL.region
+    - TAX.jurisdiction
+    - WAREHOUSE_STOCK_MOVEMENT.warehouse_id
+  - id: Q_CH_003
+    question: Should location reporting use customer address, shipping address, billing address, store location, or warehouse
+      location?
+    answer_type: single_select
+    maps_to:
+    - ADDRESS_LOCATION.address_type
+    - FULFILLMENT
+    - TAX.jurisdiction
+- group: cart_checkout_quote_flow
+  questions:
+  - id: Q_CO_001
+    question: Does your source system store carts/checkouts before purchase, or only final orders?
+    answer_type: single_select
+    maps_to:
+    - CART_CHECKOUT
+    - TRANSACTION
+  - id: Q_CO_002
+    question: 'What counts as an abandoned checkout: no payment, no order after X hours, explicit abandoned status, or marketing
+      recovery trigger?'
+    answer_type: policy_choice
+    maps_to:
+    - metrics.cart_abandonment_rate
+    - CART_CHECKOUT.abandoned_at
+  - id: Q_CO_003
+    question: For B2B/assisted sales, should accepted quotes and draft orders be counted as pipeline, revenue, or only revenue
+      after final order/invoice?
+    answer_type: policy_choice
+    maps_to:
+    - QUOTE_DRAFT_ORDER.quote_status
+    - TRANSACTION.transaction_status
+    - metrics.revenue_policy
+- group: tax_promotions_credit_and_disputes
+  questions:
+  - id: Q_FIN_001
+    question: Should tax be reported by order header, line item, jurisdiction, rate, or tax authority?
+    answer_type: multi_select
+    maps_to:
+    - TAX
+    - TRANSACTION.tax_amount
+    - ORDER_LINE
+  - id: Q_FIN_002
+    question: Do discounts come from coupons, automatic promotions, gift cards/store credit, loyalty points, or manual adjustments?
+    answer_type: multi_select
+    maps_to:
+    - PROMOTION_REDEMPTION
+    - GIFT_CARD_STORE_CREDIT
+    - LOYALTY
+    - TRANSACTION.discount_amount
+  - id: Q_FIN_003
+    question: Should disputes/chargebacks reduce revenue immediately, only when lost, or be tracked separately as risk exposure?
+    answer_type: policy_choice
+    maps_to:
+    - DISPUTE_CHARGEBACK
+    - PAYMENT
+    - metrics.chargeback_rate
+- group: warehouse_procurement_and_bundle_logic
+  questions:
+  - id: Q_OPS_001
+    question: Do you need inventory from snapshot stock only, stock movement ledger only, or both?
+    answer_type: single_select
+    maps_to:
+    - INVENTORY
+    - WAREHOUSE_STOCK_MOVEMENT
+  - id: Q_OPS_002
+    question: Do purchase orders represent supplier procurement, dropship orders, replenishment, or manufacturing inputs?
+    answer_type: multi_select
+    maps_to:
+    - PURCHASE_ORDER
+    - SUPPLIER
+    - WAREHOUSE_STOCK_MOVEMENT
+  - id: Q_OPS_003
+    question: For bundles/kits/subscription boxes, should revenue, margin, and inventory be allocated to parent bundle, components,
+      or both?
+    answer_type: policy_choice
+    maps_to:
+    - BUNDLE_COMPONENT
+    - PRODUCT
+    - ORDER_LINE
+    - metrics.bundle_component_margin
+- group: support_consent_and_customer_risk
+  questions:
+  - id: Q_CX_001
+    question: 'Which support issue categories are business-critical: delivery delay, damaged item, return, refund, payment,
+      product quality, subscription cancellation, or account issue?'
+    answer_type: multi_select
+    maps_to:
+    - SUPPORT_TICKET.issue_category
+    - RETURN
+    - FULFILLMENT
+    - PAYMENT
+  - id: Q_CX_002
+    question: 'Which consent rules must be enforced before marketing export: email opt-in, SMS opt-in, push opt-in, GDPR/CCPA
+      status, or suppression list?'
+    answer_type: multi_select
+    maps_to:
+    - CONSENT_MARKETING_OPT_IN
+    - MARKETING
+  - id: Q_CX_003
+    question: Should support tickets, disputes, returns, and low satisfaction reduce customer health score or churn-risk recommendations?
+    answer_type: yes_no_with_details
+    maps_to:
+    - SUPPORT_TICKET
+    - DISPUTE_CHARGEBACK
+    - RETURN
+    - REVIEW
+    - metrics.churn_rate
+- group: requirement_context
+  questions:
+  - id: Q_REQ_001
+    question: 'Which business type should this mapping optimize for: DTC retail, B2B wholesale, marketplace, subscription,
+      digital goods, rental/bookings, POS, dropshipping, or mixed?'
+    answer_type: multi_select
+    maps_to:
+    - schema.requirement_model.business_context_inputs.business_type
+    - entity.requirement_policy.conditional_required_fields
+  - id: Q_REQ_002
+    question: Do you sell physical inventory, digital goods, services, subscription plans, bundles/kits, rentals/bookings,
+      or a mix?
+    answer_type: multi_select
+    maps_to:
+    - product_type
+    - PRODUCT
+    - INVENTORY
+    - FULFILLMENT
+    - BUNDLE_COMPONENT
+  - id: Q_REQ_003
+    question: Do you need warehouse/inventory/fulfillment reporting, or are products delivered digitally/no-stock?
+    answer_type: single_select
+    maps_to:
+    - inventory_model
+    - fulfillment_model
+    - INVENTORY
+    - WAREHOUSE_STOCK_MOVEMENT
+    - FULFILLMENT
+  - id: Q_REQ_004
+    question: Do you operate as a marketplace with sellers, platform fees, commissions, seller payouts, or chargebacks?
+    answer_type: yes_no
+    maps_to:
+    - marketplace_model
+    - MARKETPLACE_SELLER
+    - PAYOUT_PLATFORM_FEE
+    - DISPUTE_CHARGEBACK
+  - id: Q_REQ_005
+    question: Do you require tax, invoice, VAT/GST/sales-tax, exemption, or accounting reconciliation?
+    answer_type: multi_select
+    maps_to:
+    - tax_region_model
+    - TAX
+    - TRANSACTION.invoice_id
+    - PAYMENT.settlement_status
+  - id: Q_REQ_006
+    question: 'Which metrics must be computed: revenue, AOV, margin, LTV, churn, return rate, cart abandonment, CAC/ROAS,
+      inventory turns, payout reconciliation, or support SLA?'
+    answer_type: multi_select
+    maps_to:
+    - analytics_goals
+    - metrics.yaml.derived_metrics
+    - active conditional_required fields
+  - id: Q_REQ_007
+    question: Should missing identifiers be accepted if we can generate stable surrogate keys from source columns?
+    answer_type: yes_no
+    maps_to:
+    - schema.requirement_model.missing_field_resolution_order
+    - validation.global.GLOBAL_000

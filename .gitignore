@@ -1,0 +1,44 @@
+# Environment
+env/
+venv/
+
+# Data (can be large)
+data/
+
+/output/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+# Bytecode
+*.pyo
+*.pyd
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE / Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Other temporary files
+tmp/
+temp/
+*.tmp
+
+# Large CSV/Parquet exports (optional - uncomment if you don't want to track them)
+# output/20260527_171657/

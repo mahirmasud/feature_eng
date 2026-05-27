@@ -1,0 +1,270 @@
+metrics_pack_name: ecommerce_business_metrics
+version: 2.2.0-business-conditional-requirements
+purpose: Reusable metric formulas for ecommerce analytics, recommendation logic, dashboards, and data quality checks.
+metric_contract:
+  grain_required: true
+  time_window_required: true
+  currency_normalization_required_for_money_metrics: true
+  exclude_test_cancelled_fraudulent_orders_by_default: true
+  refund_handling_default: Net metrics subtract refunds and returns; gross metrics do not.
+  requirement_policy: Metric fields are conditionally required only when that metric is enabled. Missing metric fields should
+    disable or degrade that metric, not block the whole ecommerce mapping.
+derived_metrics:
+- name: gross_margin_amount
+  formula: SUM(line_total_amount) - SUM(quantity * unit_cost)
+  grain: product/order/customer/time
+  uses_fields:
+  - line_total_amount
+  - quantity
+  - unit_cost
+  business_use: Measures absolute profitability after product cost before operating costs.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: gross_margin_rate
+  formula: gross_margin_amount / NULLIF(SUM(line_total_amount), 0)
+  grain: product/order/customer/time
+  uses_fields:
+  - gross_margin_amount
+  - line_total_amount
+  business_use: Compares profitability across products, channels, sellers, and customer segments.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: average_order_value
+  formula: SUM(total_amount) / NULLIF(COUNT(DISTINCT order_id), 0)
+  grain: channel/customer/time
+  uses_fields:
+  - total_amount
+  - order_id
+  business_use: Tracks basket monetization and impact of pricing, bundles, upsells, and promotions.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: customer_lifetime_value
+  formula: SUM(total_amount - refund_amount) by customer_id over customer lifetime
+  grain: customer
+  uses_fields:
+  - customer_id
+  - total_amount
+  - refund_amount
+  business_use: Measures net value of a customer across purchases, renewals, and refunds.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: repeat_purchase_rate
+  formula: COUNT(customers with >=2 distinct orders) / NULLIF(COUNT(customers with >=1 order), 0)
+  grain: cohort/time/channel
+  uses_fields:
+  - customer_id
+  - order_id
+  - order_date
+  business_use: Measures retention quality for retail, marketplace, subscription-adjacent, and replenishment businesses.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: churn_rate
+  formula: COUNT(customers or subscriptions cancelled/lost in period) / NULLIF(COUNT(active customers or subscriptions at
+    start), 0)
+  grain: subscription/customer/cohort/time
+  uses_fields:
+  - subscription_status
+  - customer_status
+  - cancellation_date
+  - current_period_end
+  business_use: Tracks recurring revenue loss, membership drop-off, and customer inactivity.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: conversion_rate
+  formula: COUNT(DISTINCT purchase/order sessions) / NULLIF(COUNT(DISTINCT sessions), 0)
+  grain: channel/campaign/device/time
+  uses_fields:
+  - session_id
+  - event_type
+  - order_id
+  business_use: Measures funnel effectiveness from visits and product views to purchase.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: return_rate
+  formula: COUNT(DISTINCT returned order_id) / NULLIF(COUNT(DISTINCT fulfilled order_id), 0)
+  grain: product/category/channel/time
+  uses_fields:
+  - return_id
+  - order_id
+  - return_status
+  - fulfillment_status
+  business_use: Highlights quality issues, sizing problems, fraud, operational failures, and seller risk.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: inventory_turnover
+  formula: SUM(quantity * unit_cost for sold items) / NULLIF(AVG(inventory_value), 0)
+  grain: product/location/time
+  uses_fields:
+  - quantity
+  - unit_cost
+  - quantity_on_hand
+  - product_id
+  - location_id
+  business_use: Measures how efficiently stock is converted into sales and flags slow-moving inventory.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: cart_abandonment_rate
+  formula: COUNT(DISTINCT abandoned checkout_id) / NULLIF(COUNT(DISTINCT started checkout_id), 0)
+  grain: channel/customer/time
+  uses_fields:
+  - checkout_id
+  - checkout_status
+  - abandoned_at
+  - completed_at
+  business_use: Measures lost pre-purchase demand and recovery opportunity by channel, campaign, and customer segment.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: checkout_completion_rate
+  formula: COUNT(DISTINCT completed checkout_id) / NULLIF(COUNT(DISTINCT checkout_id), 0)
+  grain: store/channel/time
+  uses_fields:
+  - checkout_id
+  - checkout_status
+  - completed_at
+  - channel_id
+  business_use: Tracks checkout friction and conversion from checkout start to purchase completion.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: promotion_redemption_rate
+  formula: COUNT(DISTINCT redemption_id) / NULLIF(COUNT(DISTINCT eligible promotion impressions or issued coupons), 0)
+  grain: campaign/channel/time
+  uses_fields:
+  - redemption_id
+  - campaign_id
+  - coupon_code
+  - redeemed_at
+  business_use: Measures coupon, referral, voucher, and campaign usage effectiveness.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: effective_tax_rate
+  formula: SUM(tax_amount) / NULLIF(SUM(taxable_amount), 0)
+  grain: jurisdiction/order/time
+  uses_fields:
+  - tax_amount
+  - taxable_amount
+  - jurisdiction
+  - tax_type
+  business_use: Checks tax collection consistency across regions, channels, and product categories.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: gift_card_liability
+  formula: SUM(current_balance) for active, unexpired gift cards and store credits
+  grain: customer/store/time
+  uses_fields:
+  - current_balance
+  - expires_at
+  - credit_type
+  business_use: Shows outstanding stored-value liability and potential future redemption pressure.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: purchase_order_fill_rate
+  formula: SUM(received_quantity) / NULLIF(SUM(ordered_quantity), 0)
+  grain: supplier/warehouse/time
+  uses_fields:
+  - purchase_order_id
+  - ordered_quantity
+  - received_quantity
+  - supplier_id
+  business_use: Measures supplier reliability and inbound replenishment quality.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: seller_take_rate
+  formula: SUM(platform_fee_amount + commission_amount) / NULLIF(SUM(transaction seller gross amount), 0)
+  grain: seller/channel/time
+  uses_fields:
+  - seller_id
+  - platform_fee_amount
+  - commission_amount
+  - payout_amount
+  business_use: Measures marketplace monetization from seller GMV.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: chargeback_rate
+  formula: COUNT(DISTINCT dispute_id where outcome in chargeback/lost/open) / NULLIF(COUNT(DISTINCT payment_id), 0)
+  grain: payment_method/channel/time
+  uses_fields:
+  - dispute_id
+  - payment_id
+  - dispute_status
+  - outcome
+  business_use: Monitors payment risk, fraud, and operational dispute exposure.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: average_support_resolution_time
+  formula: AVG(resolved_at - opened_at)
+  grain: issue_category/channel/time
+  uses_fields:
+  - ticket_id
+  - opened_at
+  - resolved_at
+  - issue_category
+  business_use: Measures service efficiency and helps detect operational pain points.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: marketing_opt_in_rate
+  formula: COUNT(DISTINCT customer_id with email_opt_in OR sms_opt_in OR push_opt_in) / NULLIF(COUNT(DISTINCT customer_id),
+    0)
+  grain: channel/country/time
+  uses_fields:
+  - customer_id
+  - email_opt_in
+  - sms_opt_in
+  - push_opt_in
+  business_use: Measures reachable audience for owned marketing while respecting consent rules.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: bundle_component_margin
+  formula: SUM(allocation_price) - SUM(quantity_required * component unit_cost)
+  grain: bundle/product/time
+  uses_fields:
+  - bundle_id
+  - component_product_id
+  - quantity_required
+  - allocation_price
+  - unit_cost
+  business_use: Computes true bundle/kit profitability after exploding components.
+  field_requirement_policy: conditional_required_when_metric_enabled
+- name: stock_movement_variance
+  formula: SUM(quantity_delta) compared with ending quantity_after - starting quantity_after
+  grain: warehouse/product/time
+  uses_fields:
+  - movement_id
+  - quantity_delta
+  - quantity_after
+  - movement_timestamp
+  business_use: Detects stock ledger errors, shrinkage, missing transfers, or adjustment anomalies.
+  field_requirement_policy: conditional_required_when_metric_enabled
+additional_metric_groups:
+- group: revenue_growth
+  metrics:
+  - name: net_revenue
+    formula: SUM(total_amount) - SUM(refund_amount)
+    grain: business/channel/customer/product/time
+    uses_fields:
+    - total_amount
+    - refund_amount
+    business_use: Shows true revenue after refunds and return impact.
+  - name: repeat_purchase_rate
+    formula: COUNT(customers_with_2_plus_orders) / NULLIF(COUNT(customers_with_1_plus_orders), 0)
+    grain: customer/cohort/time
+    uses_fields:
+    - customer_id
+    - order_id
+    - order_date
+    business_use: Measures customer retention in retail and marketplace models.
+- group: product_performance
+  metrics:
+  - name: sell_through_rate
+    formula: SUM(quantity_sold) / NULLIF(SUM(quantity_sold) + SUM(quantity_on_hand), 0)
+    grain: product/location/time
+    uses_fields:
+    - quantity
+    - quantity_on_hand
+    business_use: Identifies fast-moving and slow-moving products.
+  - name: return_rate
+    formula: COUNT(return_id) / NULLIF(COUNT(order_line_id), 0)
+    grain: product/channel/time
+    uses_fields:
+    - return_id
+    - order_line_id
+    business_use: Flags quality, sizing, listing, fulfillment, or expectation issues.
+- group: subscription_health
+  metrics:
+  - name: monthly_recurring_revenue
+    formula: SUM(normalized_monthly_subscription_amount)
+    grain: subscription/plan/customer/time
+    uses_fields:
+    - subscription_id
+    - billing_interval
+    - unit_price
+    - subscription_status
+    business_use: Measures recurring subscription revenue normalized to monthly value.
+  - name: payment_failure_rate
+    formula: COUNT(failed_payments) / NULLIF(COUNT(payment_attempts), 0)
+    grain: payment/subscription/time
+    uses_fields:
+    - payment_status
+    - payment_id
+    - subscription_id
+    business_use: Detects dunning, billing, card expiry, and payment gateway issues.

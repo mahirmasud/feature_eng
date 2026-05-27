@@ -1,0 +1,3541 @@
+dictionary_name: E-commerce Field Recognition Keywords
+version: 2.2.0-business-conditional-requirements
+purpose: Layer 3 field recognition dictionary for mapping source columns to a universal e-commerce schema.
+layer: 'Layer 3: Field Recognition'
+normalization_rules:
+- lowercase
+- trim whitespace
+- replace hyphen/space/dot/slash with underscore
+- split camelCase and PascalCase
+- remove duplicate underscores
+- expand common abbreviations such as id, qty, amt, no, ref, txn, cust
+- compare exact, normalized, token-set, and fuzzy scores inside the predicted entity context
+metadata:
+  standard_fields_covered: 162
+  total_synonyms: 2481
+  average_synonyms_per_field: 15.31
+  synonym_count_distribution:
+    fields_with_2_synonyms: 2
+    fields_with_7_synonyms: 7
+    fields_with_8_synonyms: 2
+    fields_with_9_synonyms: 1
+    fields_with_10_synonyms: 3
+    fields_with_11_synonyms: 3
+    fields_with_12_synonyms: 21
+    fields_with_13_synonyms: 10
+    fields_with_14_synonyms: 9
+    fields_with_15_synonyms: 10
+    fields_with_16_synonyms: 12
+    fields_with_17_synonyms: 14
+    fields_with_18_synonyms: 45
+    fields_with_19_synonyms: 21
+    fields_with_21_synonyms: 1
+    fields_with_22_synonyms: 1
+  source_vocabulary_families:
+  - Shopify-style API fields
+  - Stripe-style billing/payment fields
+  - QuickBooks-style accounting fields
+  - SAP/ERP-style commerce fields
+  - GA4-style ecommerce events
+  - custom OMS/WMS/PIM/CRM/CDP naming patterns
+  - Shopify Markets/checkout/draft-order/discount naming patterns
+  - Stripe payout/dispute/chargeback naming patterns
+  - Avalara/TaxJar-style tax vocabulary
+  - Zendesk/Gorgias-style support vocabulary
+  - Klaviyo/CRM consent and marketing preference fields
+  - ERP/WMS stock movement and purchase-order vocabulary
+field_keywords:
+  customer_id:
+    canonical_field: customer_id
+    canonical_entity: CUSTOMER
+    data_type: string
+    match_priority: high
+    synonyms:
+    - customer_id
+    - customerId
+    - cust_id
+    - custId
+    - customer_number
+    - customer_no
+    - customer_code
+    - customer_key
+    - buyer_id
+    - client_id
+    - user_id
+    - member_id
+    - subscriber_id
+    - account_customer_id
+    - shopify_customer_id
+    - stripe_customer_id
+    - CustomerRef
+    - customer_gid
+    - id_customer
+  account_id:
+    canonical_field: account_id
+    canonical_entity: CUSTOMER
+    data_type: string
+    match_priority: high
+    synonyms:
+    - account_id
+    - accountId
+    - acct_id
+    - acctId
+    - b2b_account_id
+    - company_account_id
+    - organization_id
+    - org_id
+    - business_account_id
+    - household_id
+    - parent_account_id
+    - account_number
+    - account_no
+    - account_code
+    - account_key
+    - CustomerAccountId
+    - qbo_customer_ref
+    - erp_account_id
+    - sold_to_party
+  customer_name:
+    canonical_field: customer_name
+    canonical_entity: CUSTOMER
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - customer_name
+    - customerName
+    - name
+    - full_name
+    - fullName
+    - display_name
+    - displayName
+    - client_name
+    - buyer_name
+    - contact_name
+    - account_name
+    - company_name
+    - billing_name
+    - recipient_name
+    - first_last_name
+    - individual_name
+    - business_name
+    - CustomerName
+    - customer_full_name
+    - first_name
+    - firstName
+    - last_name
+    - lastName
+    - given_name
+    - givenName
+    - surname
+    - family_name
+    - fname
+    - lname
+    - forename
+    - user_first_name
+    - user_last_name
+    - person_name
+  email:
+    canonical_field: email
+    canonical_entity: CUSTOMER
+    data_type: string
+    match_priority: high
+    synonyms:
+    - email
+    - email_address
+    - emailAddress
+    - customer_email
+    - customerEmail
+    - buyer_email
+    - billing_email
+    - contact_email
+    - user_email
+    - primary_email
+    - email_id
+    - e_mail
+    - mail
+    - payer_email
+    - subscriber_email
+    - member_email
+    - recipient_email
+    - ship_to_email
+    - bill_to_email
+  phone:
+    canonical_field: phone
+    canonical_entity: CUSTOMER
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - phone
+    - phone_number
+    - phoneNumber
+    - mobile
+    - mobile_number
+    - mobileNumber
+    - customer_phone
+    - buyer_phone
+    - billing_phone
+    - shipping_phone
+    - contact_phone
+    - primary_phone
+    - telephone
+    - tel
+    - cell
+    - cell_phone
+    - contact_number
+    - sms_number
+    - recipient_phone
+  billing_address:
+    canonical_field: billing_address
+    canonical_entity: CUSTOMER
+    data_type: object
+    match_priority: medium
+    synonyms:
+    - billing_address
+    - billingAddress
+    - bill_to_address
+    - billToAddress
+    - invoice_address
+    - invoicing_address
+    - payer_address
+    - billing_street
+    - billing_addr
+    - billing_location
+    - bill_address
+    - bill_to
+    - billing_contact_address
+    - customer_billing_address
+    - payment_address
+    - sold_to_address
+    - account_billing_address
+    - BillAddr
+    - billing_address_json
+  shipping_address:
+    canonical_field: shipping_address
+    canonical_entity: CUSTOMER
+    data_type: object
+    match_priority: medium
+    synonyms:
+    - shipping_address
+    - shippingAddress
+    - ship_to_address
+    - shipToAddress
+    - delivery_address
+    - recipient_address
+    - fulfillment_address
+    - destination_address
+    - ship_address
+    - shipping_addr
+    - delivery_location
+    - service_address
+    - dropoff_address
+    - consignee_address
+    - customer_shipping_address
+    - ShipAddr
+    - ship_to
+    - shipping_address_json
+    - shippingAddress1
+  customer_type:
+    canonical_field: customer_type
+    canonical_entity: CUSTOMER
+    data_type: enum
+    match_priority: medium
+    synonyms:
+    - customer_type
+    - customerType
+    - type
+    - buyer_type
+    - account_type
+    - client_type
+    - customer_segment_type
+    - customer_class
+    - customer_group
+    - customer_category
+    - guest_flag
+    - is_guest
+    - b2b_flag
+    - is_b2b
+    - subscriber_type
+    - member_type
+    - retail_or_wholesale
+    - contact_type
+    - user_type
+  customer_status:
+    canonical_field: customer_status
+    canonical_entity: CUSTOMER
+    data_type: enum
+    match_priority: medium
+    synonyms:
+    - customer_status
+    - customerStatus
+    - status
+    - account_status
+    - client_status
+    - buyer_status
+    - lifecycle_status
+    - customer_state
+    - is_active
+    - active_flag
+    - blocked_flag
+    - deleted_flag
+    - churn_status
+    - member_status
+    - subscriber_status
+    - account_state
+    - customer_enabled
+    - is_enabled
+    - customer_stage
+  acquisition_channel:
+    canonical_field: acquisition_channel
+    canonical_entity: CUSTOMER
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - acquisition_channel
+    - acquisitionChannel
+    - source
+    - source_name
+    - customer_source
+    - signup_source
+    - origin_channel
+    - first_touch_channel
+    - lead_source
+    - referral_source
+    - utm_source
+    - utm_medium
+    - marketing_source
+    - sales_channel_origin
+    - registration_channel
+    - join_channel
+    - acquired_from
+    - first_order_channel
+    - traffic_source
+  created_at:
+    canonical_field: created_at
+    canonical_entity: CUSTOMER
+    data_type: timestamp
+    match_priority: medium
+    synonyms:
+    - created_at
+    - createdAt
+    - create_date
+    - created_date
+    - creation_date
+    - date_created
+    - inserted_at
+    - record_created_at
+    - created_on
+    - created_timestamp
+    - signup_date
+    - registration_date
+    - customer_since
+    - joined_at
+    - date_added
+    - entry_date
+    - sys_created_on
+    - CreateTime
+    - time_created
+  product_id:
+    canonical_field: product_id
+    canonical_entity: PRODUCT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - product_id
+    - productId
+    - prod_id
+    - item_id
+    - itemId
+    - catalog_id
+    - catalog_item_id
+    - sku_group_id
+    - shopify_product_id
+    - product_gid
+    - ProductRef
+    - ItemRef
+    - inventory_item_ref
+    - material_id
+    - article_id
+    - asin
+    - listing_id
+    - service_id
+    - plan_product_id
+  variant_id:
+    canonical_field: variant_id
+    canonical_entity: PRODUCT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - variant_id
+    - variantId
+    - product_variant_id
+    - productVariantId
+    - sku_id
+    - skuId
+    - option_id
+    - optionId
+    - variation_id
+    - variationId
+    - item_variant_id
+    - shopify_variant_id
+    - variant_gid
+    - size_color_id
+    - configuration_id
+    - product_option_id
+    - child_sku_id
+    - style_variant_id
+    - variant_code
+  sku:
+    canonical_field: sku
+    canonical_entity: PRODUCT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - sku
+    - SKU
+    - stock_keeping_unit
+    - stockKeepingUnit
+    - item_sku
+    - product_sku
+    - variant_sku
+    - seller_sku
+    - merchant_sku
+    - mfr_sku
+    - manufacturer_sku
+    - part_number
+    - item_code
+    - article_number
+    - material_number
+    - product_code
+    - barcode_sku
+    - catalog_number
+    - ItemSku
+  product_name:
+    canonical_field: product_name
+    canonical_entity: PRODUCT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - product_name
+    - productName
+    - item_name
+    - itemName
+    - title
+    - product_title
+    - variant_title
+    - display_title
+    - catalog_name
+    - description
+    - short_description
+    - service_name
+    - plan_name
+    - listing_title
+    - merchandise_name
+    - product_label
+    - item_description
+    - ProductName
+    - ItemName
+  category:
+    canonical_field: category
+    canonical_entity: PRODUCT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - category
+    - product_category
+    - productCategory
+    - item_category
+    - collection
+    - department
+    - class
+    - product_class
+    - family
+    - product_family
+    - taxonomy
+    - category_name
+    - category_id
+    - merch_category
+    - google_product_category
+    - product_type
+    - item_group
+    - primary_category
+    - sub_category
+  brand:
+    canonical_field: brand
+    canonical_entity: PRODUCT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - brand
+    - brand_name
+    - brandName
+    - manufacturer
+    - manufacturer_name
+    - label
+    - vendor_brand
+    - product_brand
+    - publisher
+    - maker
+    - designer
+    - brand_code
+    - trademark
+    - content_owner
+    - line
+    - collection_brand
+    - BrandName
+    - mfg_brand
+    - brand_id
+  supplier_id:
+    canonical_field: supplier_id
+    canonical_entity: SUPPLIER
+    data_type: string
+    match_priority: high
+    synonyms:
+    - supplier_id
+    - supplierId
+    - vendor_id
+    - vendorId
+    - manufacturer_id
+    - manufacturerId
+    - dropshipper_id
+    - distributor_id
+    - procurement_supplier_id
+    - source_vendor_id
+    - fulfillment_supplier_id
+    - default_supplier_id
+    - primary_vendor_id
+    - VendorRef
+    - SupplierRef
+    - seller_id
+    - merchant_id
+    - consignor_id
+    - supplier_code
+  unit_price:
+    canonical_field: unit_price
+    canonical_entity: PRODUCT
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - unit_price
+    - unitPrice
+    - price
+    - item_price
+    - line_price
+    - sale_price
+    - selling_price
+    - retail_price
+    - list_price
+    - base_price
+    - amount
+    - unit_amount
+    - unit_amount_decimal
+    - price_amount
+    - rate
+    - item_rate
+    - product_price
+    - variant_price
+    - Price
+  unit_cost:
+    canonical_field: unit_cost
+    canonical_entity: PRODUCT
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - unit_cost
+    - unitCost
+    - cost
+    - item_cost
+    - product_cost
+    - variant_cost
+    - standard_cost
+    - average_cost
+    - landed_cost
+    - purchase_cost
+    - cost_price
+    - COGS
+    - cogs_unit
+    - supplier_cost
+    - wholesale_cost
+    - inventory_cost
+    - base_cost
+    - UnitCost
+    - cost_amount
+  transaction_id:
+    canonical_field: transaction_id
+    canonical_entity: TRANSACTION
+    data_type: string
+    match_priority: high
+    synonyms:
+    - transaction_id
+    - transactionId
+    - txn_id
+    - txnId
+    - sales_transaction_id
+    - order_transaction_id
+    - commerce_transaction_id
+    - external_transaction_id
+    - shopify_order_id
+    - stripe_payment_intent
+    - payment_intent_id
+    - charge_id
+    - authorization_id
+    - booking_transaction_id
+    - invoice_transaction_id
+    - transaction_number
+    - transaction_ref
+    - trans_id
+  order_id:
+    canonical_field: order_id
+    canonical_entity: TRANSACTION
+    data_type: string
+    match_priority: high
+    synonyms:
+    - order_id
+    - orderId
+    - order_number
+    - order_no
+    - order_code
+    - order_key
+    - purchase_id
+    - checkout_id
+    - cart_order_id
+    - sales_order_id
+    - shopify_order_id
+    - OrderRef
+    - SalesOrderRef
+    - booking_id
+    - reservation_id
+    - order_gid
+    - external_order_id
+    - web_order_id
+  invoice_id:
+    canonical_field: invoice_id
+    canonical_entity: TRANSACTION
+    data_type: string
+    match_priority: high
+    synonyms:
+    - invoice_id
+    - invoiceId
+    - invoice_number
+    - invoice_no
+    - invoice_code
+    - invoice_key
+    - bill_id
+    - billing_doc_id
+    - sales_receipt_id
+    - receipt_id
+    - credit_invoice_id
+    - accounting_invoice_id
+    - qbo_invoice_id
+    - erp_invoice_id
+    - document_number
+    - doc_no
+    - InvoiceRef
+    - invoice_ref
+  transaction_type:
+    canonical_field: transaction_type
+    canonical_entity: TRANSACTION
+    data_type: enum
+    match_priority: medium
+    synonyms:
+    - transaction_type
+    - transactionType
+    - type
+    - order_type
+    - sales_type
+    - document_type
+    - doc_type
+    - transaction_class
+    - txn_type
+    - charge_type
+    - booking_type
+    - invoice_type
+    - purchase_type
+    - commerce_type
+    - event_type_order
+    - operation_type
+    - movement_type
+    - sales_document_type
+  transaction_status:
+    canonical_field: transaction_status
+    canonical_entity: TRANSACTION
+    data_type: enum
+    match_priority: medium
+    synonyms:
+    - transaction_status
+    - transactionStatus
+    - order_status
+    - financial_status
+    - fulfillment_status
+    - invoice_status
+    - payment_state
+    - order_state
+    - status
+    - txn_status
+    - sales_status
+    - booking_status
+    - charge_status
+    - document_status
+    - paid_status
+    - processing_status
+    - close_status
+    - lifecycle_status
+  order_date:
+    canonical_field: order_date
+    canonical_entity: TRANSACTION
+    data_type: timestamp
+    match_priority: medium
+    synonyms:
+    - order_date
+    - orderDate
+    - created_at
+    - createdAt
+    - processed_at
+    - closed_at
+    - invoice_date
+    - transaction_date
+    - booking_date
+    - purchase_date
+    - sale_date
+    - order_created_at
+    - checkout_completed_at
+    - paid_at
+    - date
+    - doc_date
+    - posting_date
+    - trans_date
+  sales_channel:
+    canonical_field: sales_channel
+    canonical_entity: TRANSACTION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - sales_channel
+    - salesChannel
+    - channel
+    - channel_name
+    - source_name
+    - source
+    - platform
+    - marketplace
+    - storefront
+    - shop
+    - website
+    - app
+    - pos_location
+    - store_id
+    - channel_id
+    - order_source
+    - sales_source
+    - origin
+  currency:
+    canonical_field: currency
+    canonical_entity: TRANSACTION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - currency
+    - currency_code
+    - currencyCode
+    - presentment_currency
+    - shop_currency
+    - settlement_currency
+    - transaction_currency
+    - order_currency
+    - invoice_currency
+    - payment_currency
+    - iso_currency
+    - currency_iso
+    - ccy
+    - CurrencyRef
+    - document_currency
+    - price_currency
+    - customer_currency
+    - local_currency
+  subtotal_amount:
+    canonical_field: subtotal_amount
+    canonical_entity: TRANSACTION
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - subtotal_amount
+    - revenue
+    - subtotal
+    - sub_total
+    - line_subtotal
+    - items_subtotal
+    - merchandise_total
+    - item_total
+    - net_sales_before_tax
+    - pre_tax_total
+    - amount_subtotal
+    - order_subtotal
+    - invoice_subtotal
+    - goods_total
+    - basket_subtotal
+    - cart_subtotal
+    - taxable_subtotal
+    - sales_subtotal
+    - subtotal_price
+  discount_amount:
+    canonical_field: discount_amount
+    canonical_entity: TRANSACTION
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - discount_amount
+    - discount
+    - total_discount
+    - discount_total
+    - promo_discount
+    - coupon_discount
+    - order_discount
+    - line_discount
+    - discount_value
+    - amount_discount
+    - discounts_amount
+    - rebate_amount
+    - allowance_amount
+    - markdown_amount
+    - promotion_amount
+    - current_total_discounts
+    - total_discounts
+    - discount_allocations
+  tax_amount:
+    canonical_field: tax_amount
+    canonical_entity: TRANSACTION
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - tax_amount
+    - tax
+    - total_tax
+    - tax_total
+    - vat_amount
+    - gst_amount
+    - sales_tax
+    - duty_tax
+    - taxes
+    - tax_value
+    - current_total_tax
+    - tax_price
+    - invoice_tax
+    - order_tax
+    - line_tax
+    - tax_charged
+    - tax_collected
+    - TaxAmount
+  shipping_amount:
+    canonical_field: shipping_amount
+    canonical_entity: TRANSACTION
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - shipping_amount
+    - shipping
+    - shipping_total
+    - shipping_price
+    - delivery_fee
+    - delivery_amount
+    - freight_amount
+    - freight
+    - handling_fee
+    - shipping_charge
+    - delivery_charge
+    - ship_cost
+    - shipment_amount
+    - shipping_lines_price
+    - total_shipping_price
+    - shipping_cost
+    - postage
+    - carrier_fee
+  total_amount:
+    canonical_field: total_amount
+    canonical_entity: TRANSACTION
+    data_type: decimal
+    match_priority: high
+    synonyms:
+    - total_amount
+    - revenue
+    - total
+    - grand_total
+    - order_total
+    - invoice_total
+    - amount_total
+    - total_price
+    - current_total_price
+    - gross_total
+    - gross_amount
+    - paid_amount
+    - amount_due
+    - transaction_amount
+    - booking_value
+    - gmv
+    - net_amount
+    - document_total
+    - TotalAmt
+  order_line_id:
+    canonical_field: order_line_id
+    canonical_entity: ORDER_LINE
+    data_type: string
+    match_priority: high
+    synonyms:
+    - order_line_id
+    - orderLineId
+    - line_item_id
+    - lineItemId
+    - order_item_id
+    - orderItemId
+    - line_id
+    - lineId
+    - item_line_id
+    - invoice_line_id
+    - cart_line_id
+    - basket_line_id
+    - checkout_line_id
+    - transaction_line_id
+    - subscription_item_id
+    - fulfillment_line_id
+    - order_detail_id
+    - LineItemRef
+  quantity:
+    canonical_field: quantity
+    canonical_entity: ORDER_LINE
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - quantity
+    - qty
+    - qty_ordered
+    - ordered_quantity
+    - item_quantity
+    - line_quantity
+    - units
+    - unit_count
+    - count
+    - qty_sold
+    - quantity_sold
+    - purchased_quantity
+    - invoice_quantity
+    - booking_quantity
+    - subscription_quantity
+    - fulfilled_quantity
+    - returned_quantity
+    - current_quantity
+  line_total_amount:
+    canonical_field: line_total_amount
+    canonical_entity: ORDER_LINE
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - line_total_amount
+    - line_total
+    - lineTotal
+    - extended_price
+    - extended_amount
+    - line_amount
+    - item_total
+    - row_total
+    - line_subtotal
+    - net_line_amount
+    - gross_line_amount
+    - amount
+    - line_price
+    - total_line_price
+    - line_net
+    - line_value
+    - LineAmount
+    - line_item_total
+  payment_id:
+    canonical_field: payment_id
+    canonical_entity: PAYMENT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - payment_id
+    - paymentId
+    - charge_id
+    - chargeId
+    - payment_intent_id
+    - paymentIntentId
+    - authorization_id
+    - capture_id
+    - tender_id
+    - gateway_payment_id
+    - processor_payment_id
+    - stripe_payment_intent
+    - transaction_payment_id
+    - receipt_payment_id
+    - payment_ref
+    - PaymentRef
+    - settlement_payment_id
+    - payment_uuid
+  payment_method:
+    canonical_field: payment_method
+    canonical_entity: PAYMENT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - payment_method
+    - paymentMethod
+    - method
+    - payment_type
+    - tender_type
+    - card_type
+    - wallet_type
+    - bank_method
+    - gateway_method
+    - payment_instrument
+    - source_type
+    - funding_source
+    - pm_type
+    - payment_option
+    - pay_method
+    - payment_channel
+    - PaymentMethodRef
+    - card_brand
+  payment_status:
+    canonical_field: payment_status
+    canonical_entity: PAYMENT
+    data_type: enum
+    match_priority: medium
+    synonyms:
+    - payment_status
+    - paymentStatus
+    - status
+    - paid_status
+    - financial_status
+    - charge_status
+    - payment_state
+    - capture_status
+    - authorization_status
+    - settlement_state
+    - gateway_status
+    - processor_status
+    - reconciliation_status
+    - is_paid
+    - captured
+    - paid
+    - payment_lifecycle
+    - stripe_status
+  payment_amount:
+    canonical_field: payment_amount
+    canonical_entity: PAYMENT
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - payment_amount
+    - paymentAmount
+    - amount
+    - charge_amount
+    - capture_amount
+    - authorized_amount
+    - captured_amount
+    - paid_amount
+    - settled_amount
+    - tender_amount
+    - gateway_amount
+    - processor_amount
+    - payment_total
+    - amount_received
+    - amount_capturable
+    - amount_authorized
+    - payment_value
+    - pay_amount
+  settlement_status:
+    canonical_field: settlement_status
+    canonical_entity: PAYMENT
+    data_type: enum
+    match_priority: medium
+    synonyms:
+    - settlement_status
+    - settlementStatus
+    - payout_status
+    - reconciliation_status
+    - recon_status
+    - deposit_status
+    - settled_status
+    - processor_settlement_status
+    - gateway_settlement_status
+    - payment_settlement_state
+    - paid_out_status
+    - clearing_status
+    - bank_status
+    - settlement_state
+    - is_reconciled
+    - reconciled_flag
+    - payout_state
+    - batch_status
+  subscription_id:
+    canonical_field: subscription_id
+    canonical_entity: SUBSCRIPTION
+    data_type: string
+    match_priority: high
+    synonyms:
+    - subscription_id
+    - subscriptionId
+    - sub_id
+    - subId
+    - membership_id
+    - contract_id
+    - recurring_order_id
+    - billing_agreement_id
+    - plan_subscription_id
+    - stripe_subscription_id
+    - replenishment_id
+    - auto_ship_id
+    - autorenew_id
+    - subscriber_contract_id
+    - subscription_ref
+    - SubscriptionRef
+    - agreement_id
+    - recurring_profile_id
+  billing_interval:
+    canonical_field: billing_interval
+    canonical_entity: SUBSCRIPTION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - billing_interval
+    - billingInterval
+    - interval
+    - billing_period
+    - period
+    - billing_frequency
+    - frequency
+    - recurrence
+    - recurring_interval
+    - plan_interval
+    - charge_interval
+    - renewal_frequency
+    - cycle
+    - billing_cycle
+    - subscription_period
+    - payment_interval
+    - interval_count
+    - cadence
+  current_period_end:
+    canonical_field: current_period_end
+    canonical_entity: SUBSCRIPTION
+    data_type: timestamp
+    match_priority: medium
+    synonyms:
+    - current_period_end
+    - currentPeriodEnd
+    - period_end
+    - billing_period_end
+    - service_period_end
+    - subscription_end
+    - renewal_date
+    - next_renewal_at
+    - next_billing_date
+    - next_charge_date
+    - current_cycle_end
+    - term_end
+    - valid_until
+    - expires_at
+    - expiration_date
+    - end_date
+    - cycle_end
+    - contract_end
+  return_id:
+    canonical_field: return_id
+    canonical_entity: RETURN
+    data_type: string
+    match_priority: high
+    synonyms:
+    - return_id
+    - returnId
+    - rma_id
+    - rmaId
+    - refund_id
+    - refundId
+    - exchange_id
+    - chargeback_id
+    - reverse_order_id
+    - return_request_id
+    - credit_memo_id
+    - refund_receipt_id
+    - return_authorization
+    - RMA
+    - returns_id
+    - return_number
+    - return_ref
+    - ReturnRef
+  return_status:
+    canonical_field: return_status
+    canonical_entity: RETURN
+    data_type: enum
+    match_priority: medium
+    synonyms:
+    - return_status
+    - returnStatus
+    - rma_status
+    - refund_status
+    - exchange_status
+    - chargeback_status
+    - reverse_status
+    - return_state
+    - status
+    - inspection_status
+    - received_status
+    - refund_state
+    - return_lifecycle
+    - approval_status
+    - return_workflow_status
+    - resolution_status
+    - return_request_status
+    - RMAStatus
+  return_reason:
+    canonical_field: return_reason
+    canonical_entity: RETURN
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - return_reason
+    - returnReason
+    - reason
+    - refund_reason
+    - rma_reason
+    - exchange_reason
+    - chargeback_reason
+    - cancellation_reason
+    - return_cause
+    - defect_reason
+    - customer_reason
+    - resolution_reason
+    - reason_code
+    - reason_description
+    - return_reason_code
+    - refund_note
+    - return_comment
+    - RMAReason
+  refund_amount:
+    canonical_field: refund_amount
+    canonical_entity: RETURN
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - refund_amount
+    - refundAmount
+    - amount_refunded
+    - refunded_amount
+    - refund_total
+    - credit_amount
+    - chargeback_amount
+    - reversal_amount
+    - return_amount
+    - refund_value
+    - credit_memo_amount
+    - refund_receipt_amount
+    - total_refund
+    - refund_price
+    - current_total_refunds
+    - money_refunded
+    - amount_returned
+    - refund_sum
+  inventory_location_id:
+    canonical_field: inventory_location_id
+    canonical_entity: INVENTORY
+    data_type: string
+    match_priority: high
+    synonyms:
+    - inventory_location_id
+    - location_id
+    - locationId
+    - warehouse_id
+    - warehouseId
+    - stock_location_id
+    - fulfillment_location_id
+    - store_location_id
+    - depot_id
+    - 3pl_location_id
+    - virtual_location_id
+    - bin_location_id
+    - inventory_site_id
+    - stockroom_id
+    - LocationRef
+    - facility_id
+    - node_id
+    - ship_node
+  quantity_on_hand:
+    canonical_field: quantity_on_hand
+    canonical_entity: INVENTORY
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - quantity_on_hand
+    - qty_on_hand
+    - on_hand
+    - onHand
+    - stock_on_hand
+    - physical_stock
+    - stock_quantity
+    - inventory_quantity
+    - available_physical
+    - warehouse_stock
+    - oh_qty
+    - qty_available_physical
+    - units_on_hand
+    - current_stock
+    - inventory_on_hand
+    - QuantityOnHand
+    - stock_level
+    - actual_quantity
+  quantity_available:
+    canonical_field: quantity_available
+    canonical_entity: INVENTORY
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - quantity_available
+    - qty_available
+    - available_quantity
+    - available
+    - available_stock
+    - sellable_quantity
+    - sellable_stock
+    - available_to_sell
+    - ats
+    - free_stock
+    - available_for_sale
+    - inventory_available
+    - available_qty
+    - quantity_sellable
+    - stock_available
+    - qty_free
+    - available_inventory
+    - committed_available
+  campaign_id:
+    canonical_field: campaign_id
+    canonical_entity: MARKETING
+    data_type: string
+    match_priority: high
+    synonyms:
+    - campaign_id
+    - campaignId
+    - marketing_campaign_id
+    - utm_campaign
+    - promotion_id
+    - promo_id
+    - discount_campaign_id
+    - referral_campaign_id
+    - affiliate_campaign_id
+    - ad_campaign_id
+    - CampaignRef
+    - campaign_code
+    - campaign_key
+    - campaign_name_id
+    - source_campaign_id
+    - coupon_campaign_id
+    - journey_id
+    - automation_id
+  coupon_code:
+    canonical_field: coupon_code
+    canonical_entity: MARKETING
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - coupon_code
+    - couponCode
+    - promo_code
+    - promotion_code
+    - voucher_code
+    - discount_code
+    - referral_code
+    - gift_card_code
+    - reward_code
+    - offer_code
+    - campaign_code
+    - code
+    - coupon
+    - voucher
+    - promo
+    - applied_code
+    - discount_application_code
+    - CouponCode
+  carrier_name:
+    canonical_field: carrier_name
+    canonical_entity: FULFILLMENT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - carrier_name
+    - carrierName
+    - carrier
+    - shipping_carrier
+    - shipping_company
+    - tracking_company
+    - courier
+    - courier_name
+    - delivery_provider
+    - logistics_provider
+    - 3pl_provider
+    - shipper
+    - service_provider
+    - freight_carrier
+    - carrier_service
+    - shipping_method_provider
+    - fulfillment_carrier
+    - TrackingCompany
+  tracking_number:
+    canonical_field: tracking_number
+    canonical_entity: FULFILLMENT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - tracking_number
+    - trackingNumber
+    - tracking_no
+    - trackingNo
+    - tracking_code
+    - shipment_tracking_number
+    - carrier_tracking_number
+    - awb
+    - air_waybill
+    - waybill
+    - consignment_number
+    - delivery_reference
+    - parcel_number
+    - tracking_ref
+    - tracking_id
+    - tracking_numbers
+    - trackingInfo.number
+    - shipment_no
+  rating_score:
+    canonical_field: rating_score
+    canonical_entity: REVIEW
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - rating_score
+    - ratingScore
+    - rating
+    - star_rating
+    - stars
+    - review_rating
+    - nps_score
+    - csat_score
+    - satisfaction_score
+    - feedback_score
+    - survey_score
+    - score
+    - product_rating
+    - seller_rating
+    - delivery_rating
+    - app_rating
+    - customer_rating
+    - review_stars
+  sentiment_score:
+    canonical_field: sentiment_score
+    canonical_entity: REVIEW
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - sentiment_score
+    - sentimentScore
+    - sentiment
+    - sentiment_polarity
+    - polarity
+    - opinion_score
+    - review_sentiment
+    - feedback_sentiment
+    - nps_sentiment
+    - customer_sentiment
+    - text_sentiment
+    - ai_sentiment_score
+    - sentiment_value
+    - emotion_score
+    - positive_score
+    - negative_score
+    - neutral_score
+    - sentiment_label
+  session_id:
+    canonical_field: session_id
+    canonical_entity: SESSION_BEHAVIOR
+    data_type: string
+    match_priority: high
+    synonyms:
+    - session_id
+    - sessionId
+    - web_session_id
+    - app_session_id
+    - visit_id
+    - visitor_session_id
+    - ga_session_id
+    - analytics_session_id
+    - clickstream_session_id
+    - checkout_session_id
+    - cart_session_id
+    - user_session
+    - device_session_id
+    - browser_session_id
+    - tracking_session_id
+    - event_session_id
+    - session_key
+    - session_uuid
+  event_type:
+    canonical_field: event_type
+    canonical_entity: SESSION_BEHAVIOR
+    data_type: enum
+    match_priority: medium
+    synonyms:
+    - event_type
+    - eventType
+    - event_name
+    - name
+    - action
+    - activity_type
+    - behavior_type
+    - click_type
+    - ga_event_name
+    - analytics_event
+    - user_event
+    - funnel_event
+    - view_item
+    - add_to_cart
+    - begin_checkout
+    - purchase
+    - refund
+    - search
+  store_id:
+    canonical_field: store_id
+    canonical_entity: STORE_CHANNEL
+    data_type: string
+    match_priority: high
+    synonyms:
+    - store_id
+    - storeId
+    - shop_id
+    - shopId
+    - store_code
+    - shop_code
+    - location_id
+    - locationId
+    - store_number
+    - store_no
+    - branch_id
+    - branch_code
+    - outlet_id
+    - retail_location_id
+    - store_ref
+    - StoreId
+    - storeid
+    - store-id
+    - store id
+    - Store Id
+    - store_key
+    - storeRef
+  channel_id:
+    canonical_field: channel_id
+    canonical_entity: STORE_CHANNEL
+    data_type: string
+    match_priority: high
+    synonyms:
+    - channel_id
+    - channelId
+    - sales_channel_id
+    - channel_code
+    - source_channel_id
+    - store_channel_id
+    - marketplace_channel_id
+    - web_channel_id
+    - pos_channel_id
+    - channel_ref
+    - selling_channel_id
+    - commerce_channel_id
+    - ChannelId
+    - channelid
+    - channel-id
+    - channel id
+    - Channel Id
+    - channel_key
+    - channel_number
+    - channel_no
+    - channelRef
+  store_name:
+    canonical_field: store_name
+    canonical_entity: STORE_CHANNEL
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - store_name
+    - storeName
+    - StoreName
+    - storename
+    - store-name
+    - store name
+    - Store Name
+  channel_type:
+    canonical_field: channel_type
+    canonical_entity: STORE_CHANNEL
+    data_type: string
+    match_priority: high
+    synonyms:
+    - channel_type
+    - channelType
+    - sales_channel
+    - salesChannel
+    - channel
+    - source_channel
+    - order_source
+    - source_type
+    - store_type
+    - marketplace_name
+    - platform_channel
+    - traffic_channel
+    - selling_channel
+    - ChannelType
+    - channeltype
+    - channel-type
+    - channel type
+    - Channel Type
+  platform_name:
+    canonical_field: platform_name
+    canonical_entity: STORE_CHANNEL
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - platform_name
+    - platform
+    - commerce_platform
+    - source_platform
+    - marketplace
+    - marketplace_name
+    - shop_system
+    - ecommerce_platform
+    - cart_platform
+    - sales_platform
+    - platformName
+    - PlatformName
+    - platformname
+    - platform-name
+    - platform name
+    - Platform Name
+  region:
+    canonical_field: region
+    canonical_entity: STORE_CHANNEL
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - region
+    - Region
+  timezone:
+    canonical_field: timezone
+    canonical_entity: STORE_CHANNEL
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - timezone
+    - Timezone
+  is_active:
+    canonical_field: is_active
+    canonical_entity: STORE_CHANNEL
+    data_type: boolean
+    match_priority: medium
+    synonyms:
+    - is_active
+    - isActive
+    - IsActive
+    - isactive
+    - is-active
+    - is active
+    - Is Active
+  address_id:
+    canonical_field: address_id
+    canonical_entity: ADDRESS_LOCATION
+    data_type: string
+    match_priority: high
+    synonyms:
+    - address_id
+    - addressId
+    - addr_id
+    - location_address_id
+    - customer_address_id
+    - shipping_address_id
+    - billing_address_id
+    - address_key
+    - address_ref
+    - AddressId
+    - addressid
+    - address-id
+    - address id
+    - Address Id
+    - address_number
+    - address_no
+    - addressRef
+  address_type:
+    canonical_field: address_type
+    canonical_entity: ADDRESS_LOCATION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - address_type
+    - addr_type
+    - billing_or_shipping
+    - location_type
+    - ship_bill_flag
+    - address_usage
+    - usage_type
+    - contact_address_type
+    - addressType
+    - AddressType
+    - addresstype
+    - address-type
+    - address type
+    - Address Type
+  address_line_1:
+    canonical_field: address_line_1
+    canonical_entity: ADDRESS_LOCATION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - address_line_1
+    - address1
+    - addr1
+    - line1
+    - street_address
+    - street1
+    - shipping_address_1
+    - billing_address_1
+    - street_line_1
+    - addressLine_1
+    - AddressLine_1
+    - addressline1
+    - address-line-1
+    - address line 1
+    - Address Line 1
+  address_line_2:
+    canonical_field: address_line_2
+    canonical_entity: ADDRESS_LOCATION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - address_line_2
+    - address2
+    - addr2
+    - line2
+    - apartment
+    - suite
+    - unit
+    - shipping_address_2
+    - billing_address_2
+    - street_line_2
+    - addressLine_2
+    - AddressLine_2
+    - addressline2
+    - address-line-2
+    - address line 2
+    - Address Line 2
+  city:
+    canonical_field: city
+    canonical_entity: ADDRESS_LOCATION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - city
+    - town
+    - town_city
+    - municipality
+    - locality
+    - shipping_city
+    - billing_city
+    - suburb
+    - district_city
+    - City
+  state_region:
+    canonical_field: state_region
+    canonical_entity: ADDRESS_LOCATION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - state_region
+    - state
+    - province
+    - region
+    - county
+    - district
+    - shipping_state
+    - billing_state
+    - administrative_area
+    - stateRegion
+    - StateRegion
+    - stateregion
+    - state-region
+    - state region
+    - State Region
+  postal_code:
+    canonical_field: postal_code
+    canonical_entity: ADDRESS_LOCATION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - postal_code
+    - postcode
+    - zip
+    - zip_code
+    - shipping_zip
+    - billing_zip
+    - post_code
+    - outward_code
+    - postalCode
+    - PostalCode
+    - postalcode
+    - postal-code
+    - postal code
+    - Postal Code
+  country_code:
+    canonical_field: country_code
+    canonical_entity: ADDRESS_LOCATION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - country_code
+    - country
+    - country_iso
+    - iso_country
+    - shipping_country
+    - billing_country
+    - country_iso2
+    - country_iso3
+    - countryCode
+    - CountryCode
+    - countrycode
+    - country-code
+    - country code
+    - Country Code
+  latitude:
+    canonical_field: latitude
+    canonical_entity: ADDRESS_LOCATION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - latitude
+    - lat
+    - geo_lat
+    - address_latitude
+    - shipping_latitude
+    - location_lat
+    - gps_latitude
+    - Latitude
+  longitude:
+    canonical_field: longitude
+    canonical_entity: ADDRESS_LOCATION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - longitude
+    - lng
+    - lon
+    - geo_lng
+    - address_longitude
+    - shipping_longitude
+    - location_lng
+    - gps_longitude
+    - Longitude
+  is_default:
+    canonical_field: is_default
+    canonical_entity: ADDRESS_LOCATION
+    data_type: boolean
+    match_priority: medium
+    synonyms:
+    - is_default
+    - isDefault
+    - IsDefault
+    - isdefault
+    - is-default
+    - is default
+    - Is Default
+  cart_id:
+    canonical_field: cart_id
+    canonical_entity: CART_CHECKOUT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - cart_id
+    - cartId
+    - basket_id
+    - shopping_cart_id
+    - cart_token
+    - cart_key
+    - quote_cart_id
+    - checkout_cart_id
+    - CartId
+    - cartid
+    - cart-id
+    - cart id
+    - Cart Id
+    - cart_ref
+    - cart_number
+    - cart_no
+    - cartRef
+  checkout_id:
+    canonical_field: checkout_id
+    canonical_entity: CART_CHECKOUT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - checkout_id
+    - checkoutId
+    - checkout_token
+    - checkout_session_id
+    - session_checkout_id
+    - shopify_checkout_id
+    - stripe_checkout_session_id
+    - CheckoutId
+    - checkoutid
+    - checkout-id
+    - checkout id
+    - Checkout Id
+    - checkout_key
+    - checkout_ref
+    - checkout_number
+    - checkout_no
+    - checkoutRef
+  cart_status:
+    canonical_field: cart_status
+    canonical_entity: CART_CHECKOUT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - cart_status
+    - basket_status
+    - cart_state
+    - shopping_cart_status
+    - cart_stage
+    - cart_lifecycle_status
+    - cartStatus
+    - CartStatus
+    - cartstatus
+    - cart-status
+    - cart status
+    - Cart Status
+    - cart_flag
+  checkout_status:
+    canonical_field: checkout_status
+    canonical_entity: CART_CHECKOUT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - checkout_status
+    - checkout_state
+    - checkout_stage
+    - abandoned_checkout_status
+    - payment_checkout_status
+    - checkoutStatus
+    - CheckoutStatus
+    - checkoutstatus
+    - checkout-status
+    - checkout status
+    - Checkout Status
+    - checkout_flag
+  abandoned_at:
+    canonical_field: abandoned_at
+    canonical_entity: CART_CHECKOUT
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - abandoned_at
+    - cart_abandoned_at
+    - checkout_abandoned_at
+    - abandonment_time
+    - abandoned_datetime
+    - abandonedAt
+    - AbandonedAt
+    - abandonedat
+    - abandoned-at
+    - abandoned at
+    - Abandoned At
+    - abandoned_date
+    - abandoned_time
+  completed_at:
+    canonical_field: completed_at
+    canonical_entity: CART_CHECKOUT
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - completed_at
+    - checkout_completed_at
+    - cart_completed_at
+    - completion_time
+    - converted_at
+    - purchase_completed_at
+    - completedAt
+    - CompletedAt
+    - completedat
+    - completed-at
+    - completed at
+    - Completed At
+    - completed_date
+    - completed_datetime
+    - completed_time
+  cart_value_amount:
+    canonical_field: cart_value_amount
+    canonical_entity: CART_CHECKOUT
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - cart_value_amount
+    - cart_value
+    - cart_total
+    - basket_value
+    - basket_total
+    - checkout_total
+    - checkout_amount
+    - cart_subtotal
+    - cartValueAmount
+    - CartValueAmount
+    - cartvalueamount
+    - cart-value-amount
+    - cart value amount
+    - Cart Value Amount
+    - cart_value_amt
+    - cart_value_value
+    - cart_value_total
+    - cart_valueAmount
+  item_count:
+    canonical_field: item_count
+    canonical_entity: CART_CHECKOUT
+    data_type: integer
+    match_priority: medium
+    synonyms:
+    - item_count
+    - itemCount
+    - ItemCount
+    - itemcount
+    - item-count
+    - item count
+    - Item Count
+  quote_id:
+    canonical_field: quote_id
+    canonical_entity: QUOTE_DRAFT_ORDER
+    data_type: string
+    match_priority: high
+    synonyms:
+    - quote_id
+    - quoteId
+    - estimate_id
+    - proposal_id
+    - quotation_id
+    - sales_quote_id
+    - quote_number
+    - quote_no
+    - QuoteId
+    - quoteid
+    - quote-id
+    - quote id
+    - Quote Id
+    - quote_key
+    - quote_ref
+    - quoteRef
+  draft_order_id:
+    canonical_field: draft_order_id
+    canonical_entity: QUOTE_DRAFT_ORDER
+    data_type: string
+    match_priority: high
+    synonyms:
+    - draft_order_id
+    - draftOrderId
+    - draft_id
+    - shopify_draft_order_id
+    - draft_order_number
+    - proforma_id
+    - proforma_invoice_id
+    - DraftOrderId
+    - draftorderid
+    - draft-order-id
+    - draft order id
+    - Draft Order Id
+    - draft_order_key
+    - draft_order_ref
+    - draft_order_no
+    - draft_orderId
+    - draft_orderRef
+  sales_rep_id:
+    canonical_field: sales_rep_id
+    canonical_entity: QUOTE_DRAFT_ORDER
+    data_type: string
+    match_priority: high
+    synonyms:
+    - sales_rep_id
+    - rep_id
+    - account_manager_id
+    - salesperson_id
+    - agent_id
+    - owner_id
+    - sales_user_id
+    - salesRepId
+    - SalesRepId
+    - salesrepid
+    - sales-rep-id
+    - sales rep id
+    - Sales Rep Id
+    - sales_rep_key
+    - sales_rep_ref
+    - sales_rep_number
+    - sales_rep_no
+    - sales_repId
+    - sales_repRef
+  quote_status:
+    canonical_field: quote_status
+    canonical_entity: QUOTE_DRAFT_ORDER
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - quote_status
+    - estimate_status
+    - draft_order_status
+    - quotation_status
+    - proposal_status
+    - quote_state
+    - quoteStatus
+    - QuoteStatus
+    - quotestatus
+    - quote-status
+    - quote status
+    - Quote Status
+    - quote_stage
+    - quote_flag
+  valid_until:
+    canonical_field: valid_until
+    canonical_entity: QUOTE_DRAFT_ORDER
+    data_type: date
+    match_priority: medium
+    synonyms:
+    - valid_until
+    - expires_at
+    - expiry_date
+    - quote_expiry
+    - valid_to
+    - expiration_date
+    - quote_valid_until
+    - validUntil
+    - ValidUntil
+    - validuntil
+    - valid-until
+    - valid until
+    - Valid Until
+  quoted_subtotal_amount:
+    canonical_field: quoted_subtotal_amount
+    canonical_entity: QUOTE_DRAFT_ORDER
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - quoted_subtotal_amount
+    - quotedSubtotalAmount
+    - QuotedSubtotalAmount
+    - quotedsubtotalamount
+    - quoted-subtotal-amount
+    - quoted subtotal amount
+    - Quoted Subtotal Amount
+    - quoted_subtotal
+    - quoted_subtotal_amt
+    - quoted_subtotal_value
+    - quoted_subtotal_total
+    - quoted_subtotalAmount
+  quoted_discount_amount:
+    canonical_field: quoted_discount_amount
+    canonical_entity: QUOTE_DRAFT_ORDER
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - quoted_discount_amount
+    - quotedDiscountAmount
+    - QuotedDiscountAmount
+    - quoteddiscountamount
+    - quoted-discount-amount
+    - quoted discount amount
+    - Quoted Discount Amount
+    - quoted_discount
+    - quoted_discount_amt
+    - quoted_discount_value
+    - quoted_discount_total
+    - quoted_discountAmount
+  quoted_tax_amount:
+    canonical_field: quoted_tax_amount
+    canonical_entity: QUOTE_DRAFT_ORDER
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - quoted_tax_amount
+    - quotedTaxAmount
+    - QuotedTaxAmount
+    - quotedtaxamount
+    - quoted-tax-amount
+    - quoted tax amount
+    - Quoted Tax Amount
+    - quoted_tax
+    - quoted_tax_amt
+    - quoted_tax_value
+    - quoted_tax_total
+    - quoted_taxAmount
+  quoted_total_amount:
+    canonical_field: quoted_total_amount
+    canonical_entity: QUOTE_DRAFT_ORDER
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - quoted_total_amount
+    - quote_total
+    - estimate_total
+    - draft_order_total
+    - proforma_total
+    - quoted_amount
+    - quotedTotalAmount
+    - QuotedTotalAmount
+    - quotedtotalamount
+    - quoted-total-amount
+    - quoted total amount
+    - Quoted Total Amount
+    - quoted_total
+    - quoted_total_amt
+    - quoted_total_value
+    - quoted_total_total
+    - quoted_totalAmount
+  tax_id:
+    canonical_field: tax_id
+    canonical_entity: TAX
+    data_type: string
+    match_priority: high
+    synonyms:
+    - tax_id
+    - tax_line_id
+    - tax_detail_id
+    - tax_record_id
+    - vat_line_id
+    - gst_line_id
+    - sales_tax_id
+    - taxId
+    - TaxId
+    - taxid
+    - tax-id
+    - tax id
+    - Tax Id
+    - tax_key
+    - tax_ref
+    - tax_number
+    - tax_no
+    - taxRef
+  jurisdiction:
+    canonical_field: jurisdiction
+    canonical_entity: TAX
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - jurisdiction
+    - tax_jurisdiction
+    - tax_region
+    - tax_country
+    - tax_state
+    - tax_authority
+    - nexus_jurisdiction
+    - Jurisdiction
+  tax_type:
+    canonical_field: tax_type
+    canonical_entity: TAX
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - tax_type
+    - vat_gst_type
+    - tax_name
+    - tax_code
+    - tax_category
+    - tax_scheme
+    - tax_authority_type
+    - taxType
+    - TaxType
+    - taxtype
+    - tax-type
+    - tax type
+    - Tax Type
+  tax_rate:
+    canonical_field: tax_rate
+    canonical_entity: TAX
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - tax_rate
+    - vat_rate
+    - gst_rate
+    - sales_tax_rate
+    - tax_percentage
+    - tax_percent
+    - rate
+    - taxRate
+    - TaxRate
+    - taxrate
+    - tax-rate
+    - tax rate
+    - Tax Rate
+  taxable_amount:
+    canonical_field: taxable_amount
+    canonical_entity: TAX
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - taxable_amount
+    - tax_base
+    - tax_basis
+    - net_taxable_amount
+    - taxable_value
+    - assessable_amount
+    - taxableAmount
+    - TaxableAmount
+    - taxableamount
+    - taxable-amount
+    - taxable amount
+    - Taxable Amount
+    - taxable
+    - taxable_amt
+    - taxable_total
+  exemption_code:
+    canonical_field: exemption_code
+    canonical_entity: TAX
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - exemption_code
+    - exemptionCode
+    - ExemptionCode
+    - exemptioncode
+    - exemption-code
+    - exemption code
+    - Exemption Code
+  redemption_id:
+    canonical_field: redemption_id
+    canonical_entity: PROMOTION_REDEMPTION
+    data_type: string
+    match_priority: high
+    synonyms:
+    - redemption_id
+    - coupon_redemption_id
+    - voucher_redemption_id
+    - promo_redemption_id
+    - discount_application_id
+    - referral_redemption_id
+    - redemptionId
+    - RedemptionId
+    - redemptionid
+    - redemption-id
+    - redemption id
+    - Redemption Id
+    - redemption_key
+    - redemption_ref
+    - redemption_number
+    - redemption_no
+    - redemptionRef
+  redemption_status:
+    canonical_field: redemption_status
+    canonical_entity: PROMOTION_REDEMPTION
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - redemption_status
+    - coupon_status
+    - voucher_status
+    - promo_usage_status
+    - discount_status
+    - redemption_state
+    - redemptionStatus
+    - RedemptionStatus
+    - redemptionstatus
+    - redemption-status
+    - redemption status
+    - Redemption Status
+    - redemption_stage
+    - redemption_flag
+  redeemed_at:
+    canonical_field: redeemed_at
+    canonical_entity: PROMOTION_REDEMPTION
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - redeemed_at
+    - redemption_date
+    - coupon_used_at
+    - voucher_used_at
+    - promo_applied_at
+    - discount_applied_at
+    - redeemedAt
+    - RedeemedAt
+    - redeemedat
+    - redeemed-at
+    - redeemed at
+    - Redeemed At
+    - redeemed_date
+    - redeemed_datetime
+    - redeemed_time
+  credit_account_id:
+    canonical_field: credit_account_id
+    canonical_entity: GIFT_CARD_STORE_CREDIT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - credit_account_id
+    - store_credit_id
+    - wallet_id
+    - account_credit_id
+    - customer_credit_id
+    - credit_wallet_id
+    - creditAccountId
+    - CreditAccountId
+    - creditaccountid
+    - credit-account-id
+    - credit account id
+    - Credit Account Id
+    - credit_account_key
+    - credit_account_ref
+    - credit_account_number
+    - credit_account_no
+    - credit_accountId
+    - credit_accountRef
+  gift_card_id:
+    canonical_field: gift_card_id
+    canonical_entity: GIFT_CARD_STORE_CREDIT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - gift_card_id
+    - giftCardId
+    - giftcard_id
+    - gift_card_number
+    - gift_card_code
+    - stored_value_card_id
+    - GiftCardId
+    - giftcardid
+    - gift-card-id
+    - gift card id
+    - Gift Card Id
+    - gift_card_key
+    - gift_card_ref
+    - gift_card_no
+    - gift_cardId
+    - gift_cardRef
+  issued_amount:
+    canonical_field: issued_amount
+    canonical_entity: GIFT_CARD_STORE_CREDIT
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - issued_amount
+    - original_balance
+    - initial_balance
+    - gift_card_amount
+    - store_credit_amount
+    - credit_issued
+    - issuedAmount
+    - IssuedAmount
+    - issuedamount
+    - issued-amount
+    - issued amount
+    - Issued Amount
+    - issued
+    - issued_amt
+    - issued_value
+    - issued_total
+  current_balance:
+    canonical_field: current_balance
+    canonical_entity: GIFT_CARD_STORE_CREDIT
+    data_type: decimal
+    match_priority: high
+    synonyms:
+    - current_balance
+    - balance
+    - remaining_balance
+    - gift_card_balance
+    - store_credit_balance
+    - wallet_balance
+    - available_credit
+    - currentBalance
+    - CurrentBalance
+    - currentbalance
+    - current-balance
+    - current balance
+    - Current Balance
+  credit_type:
+    canonical_field: credit_type
+    canonical_entity: GIFT_CARD_STORE_CREDIT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - credit_type
+    - stored_value_type
+    - wallet_type
+    - gift_card_type
+    - store_credit_type
+    - credit_reason
+    - creditType
+    - CreditType
+    - credittype
+    - credit-type
+    - credit type
+    - Credit Type
+  issued_at:
+    canonical_field: issued_at
+    canonical_entity: GIFT_CARD_STORE_CREDIT
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - issued_at
+    - issuedAt
+    - IssuedAt
+    - issuedat
+    - issued-at
+    - issued at
+    - Issued At
+    - issued_date
+    - issued_datetime
+    - issued_time
+  expires_at:
+    canonical_field: expires_at
+    canonical_entity: GIFT_CARD_STORE_CREDIT
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - expires_at
+    - expiresAt
+    - ExpiresAt
+    - expiresat
+    - expires-at
+    - expires at
+    - Expires At
+    - expires_date
+    - expires_datetime
+    - expires_time
+  last_redeemed_at:
+    canonical_field: last_redeemed_at
+    canonical_entity: GIFT_CARD_STORE_CREDIT
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - last_redeemed_at
+    - lastRedeemedAt
+    - LastRedeemedAt
+    - lastredeemedat
+    - last-redeemed-at
+    - last redeemed at
+    - Last Redeemed At
+    - last_redeemed_date
+    - last_redeemed_datetime
+    - last_redeemed_time
+    - last_redeemedAt
+  movement_id:
+    canonical_field: movement_id
+    canonical_entity: WAREHOUSE_STOCK_MOVEMENT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - movement_id
+    - stock_movement_id
+    - inventory_movement_id
+    - ledger_id
+    - adjustment_id
+    - stock_ledger_id
+    - movementId
+    - MovementId
+    - movementid
+    - movement-id
+    - movement id
+    - Movement Id
+    - movement_key
+    - movement_ref
+    - movement_number
+    - movement_no
+    - movementRef
+  movement_type:
+    canonical_field: movement_type
+    canonical_entity: WAREHOUSE_STOCK_MOVEMENT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - movement_type
+    - stock_movement_type
+    - inventory_action
+    - adjustment_type
+    - transaction_type
+    - stock_event_type
+    - movementType
+    - MovementType
+    - movementtype
+    - movement-type
+    - movement type
+    - Movement Type
+  quantity_delta:
+    canonical_field: quantity_delta
+    canonical_entity: WAREHOUSE_STOCK_MOVEMENT
+    data_type: integer
+    match_priority: medium
+    synonyms:
+    - quantity_delta
+    - qty_delta
+    - stock_delta
+    - inventory_delta
+    - adjustment_quantity
+    - movement_quantity
+    - change_qty
+    - quantityDelta
+    - QuantityDelta
+    - quantitydelta
+    - quantity-delta
+    - quantity delta
+    - Quantity Delta
+  quantity_after:
+    canonical_field: quantity_after
+    canonical_entity: WAREHOUSE_STOCK_MOVEMENT
+    data_type: integer
+    match_priority: medium
+    synonyms:
+    - quantity_after
+    - balance_after
+    - stock_after
+    - on_hand_after
+    - ending_quantity
+    - post_movement_quantity
+    - quantityAfter
+    - QuantityAfter
+    - quantityafter
+    - quantity-after
+    - quantity after
+    - Quantity After
+  movement_reason:
+    canonical_field: movement_reason
+    canonical_entity: WAREHOUSE_STOCK_MOVEMENT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - movement_reason
+    - adjustment_reason
+    - stock_reason
+    - inventory_reason
+    - reason_code
+    - movement_note
+    - movementReason
+    - MovementReason
+    - movementreason
+    - movement-reason
+    - movement reason
+    - Movement Reason
+  movement_timestamp:
+    canonical_field: movement_timestamp
+    canonical_entity: WAREHOUSE_STOCK_MOVEMENT
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - movement_timestamp
+    - movement_at
+    - stock_moved_at
+    - inventory_changed_at
+    - adjusted_at
+    - ledger_timestamp
+    - movementTimestamp
+    - MovementTimestamp
+    - movementtimestamp
+    - movement-timestamp
+    - movement timestamp
+    - Movement Timestamp
+  purchase_order_id:
+    canonical_field: purchase_order_id
+    canonical_entity: PURCHASE_ORDER
+    data_type: string
+    match_priority: high
+    synonyms:
+    - purchase_order_id
+    - po_id
+    - po_number
+    - purchase_order_number
+    - supplier_order_id
+    - procurement_order_id
+    - purchaseOrderId
+    - PurchaseOrderId
+    - purchaseorderid
+    - purchase-order-id
+    - purchase order id
+    - Purchase Order Id
+    - purchase_order_key
+    - purchase_order_ref
+    - purchase_order_no
+    - purchase_orderId
+    - purchase_orderRef
+  po_status:
+    canonical_field: po_status
+    canonical_entity: PURCHASE_ORDER
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - po_status
+    - purchase_order_status
+    - procurement_status
+    - supplier_order_status
+    - inbound_status
+    - receiving_status
+    - poStatus
+    - PoStatus
+    - postatus
+    - po-status
+    - po status
+    - Po Status
+    - po_state
+    - po_stage
+    - po_flag
+  ordered_at:
+    canonical_field: ordered_at
+    canonical_entity: PURCHASE_ORDER
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - ordered_at
+    - po_created_at
+    - purchase_order_date
+    - ordered_date
+    - procurement_date
+    - supplier_order_date
+    - orderedAt
+    - OrderedAt
+    - orderedat
+    - ordered-at
+    - ordered at
+    - Ordered At
+    - ordered_datetime
+    - ordered_time
+  expected_receipt_date:
+    canonical_field: expected_receipt_date
+    canonical_entity: PURCHASE_ORDER
+    data_type: date
+    match_priority: medium
+    synonyms:
+    - expected_receipt_date
+    - eta_date
+    - expected_delivery_date
+    - expected_arrival_date
+    - due_date
+    - promised_receipt_date
+    - expectedReceiptDate
+    - ExpectedReceiptDate
+    - expectedreceiptdate
+    - expected-receipt-date
+    - expected receipt date
+    - Expected Receipt Date
+  received_at:
+    canonical_field: received_at
+    canonical_entity: PURCHASE_ORDER
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - received_at
+    - goods_received_at
+    - grn_date
+    - receipt_date
+    - inbound_received_at
+    - delivered_to_warehouse_at
+    - receivedAt
+    - ReceivedAt
+    - receivedat
+    - received-at
+    - received at
+    - Received At
+    - received_date
+    - received_datetime
+    - received_time
+  ordered_quantity:
+    canonical_field: ordered_quantity
+    canonical_entity: PURCHASE_ORDER
+    data_type: integer
+    match_priority: medium
+    synonyms:
+    - ordered_quantity
+    - ordered_qty
+    - po_quantity
+    - purchase_qty
+    - qty_ordered
+    - quantity_ordered
+    - orderedQuantity
+    - OrderedQuantity
+    - orderedquantity
+    - ordered-quantity
+    - ordered quantity
+    - Ordered Quantity
+  received_quantity:
+    canonical_field: received_quantity
+    canonical_entity: PURCHASE_ORDER
+    data_type: integer
+    match_priority: medium
+    synonyms:
+    - received_quantity
+    - received_qty
+    - qty_received
+    - goods_received_qty
+    - inbound_quantity
+    - quantity_received
+    - receivedQuantity
+    - ReceivedQuantity
+    - receivedquantity
+    - received-quantity
+    - received quantity
+    - Received Quantity
+  purchase_cost_amount:
+    canonical_field: purchase_cost_amount
+    canonical_entity: PURCHASE_ORDER
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - purchase_cost_amount
+    - po_cost
+    - purchase_cost
+    - supplier_cost
+    - landed_cost
+    - procurement_cost
+    - purchaseCostAmount
+    - PurchaseCostAmount
+    - purchasecostamount
+    - purchase-cost-amount
+    - purchase cost amount
+    - Purchase Cost Amount
+    - purchase_cost_amt
+    - purchase_cost_value
+    - purchase_cost_total
+    - purchase_costAmount
+  payout_id:
+    canonical_field: payout_id
+    canonical_entity: PAYOUT_PLATFORM_FEE
+    data_type: string
+    match_priority: high
+    synonyms:
+    - payout_id
+    - settlement_id
+    - seller_payout_id
+    - merchant_payout_id
+    - stripe_payout_id
+    - disbursement_id
+    - payoutId
+    - PayoutId
+    - payoutid
+    - payout-id
+    - payout id
+    - Payout Id
+    - payout_key
+    - payout_ref
+    - payout_number
+    - payout_no
+    - payoutRef
+  payout_status:
+    canonical_field: payout_status
+    canonical_entity: PAYOUT_PLATFORM_FEE
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - payout_status
+    - settlement_status
+    - disbursement_status
+    - seller_payment_status
+    - payout_state
+    - payoutStatus
+    - PayoutStatus
+    - payoutstatus
+    - payout-status
+    - payout status
+    - Payout Status
+    - payout_stage
+    - payout_flag
+  payout_amount:
+    canonical_field: payout_amount
+    canonical_entity: PAYOUT_PLATFORM_FEE
+    data_type: decimal
+    match_priority: high
+    synonyms:
+    - payout_amount
+    - settlement_amount
+    - seller_payout_amount
+    - merchant_payout_amount
+    - disbursement_amount
+    - net_payout
+    - payoutAmount
+    - PayoutAmount
+    - payoutamount
+    - payout-amount
+    - payout amount
+    - Payout Amount
+    - payout
+    - payout_amt
+    - payout_value
+    - payout_total
+  platform_fee_amount:
+    canonical_field: platform_fee_amount
+    canonical_entity: PAYOUT_PLATFORM_FEE
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - platform_fee_amount
+    - marketplace_fee
+    - platform_fee
+    - service_fee
+    - take_rate_amount
+    - platform_commission_amount
+    - platformFeeAmount
+    - PlatformFeeAmount
+    - platformfeeamount
+    - platform-fee-amount
+    - platform fee amount
+    - Platform Fee Amount
+    - platform_fee_amt
+    - platform_fee_value
+    - platform_fee_total
+    - platform_feeAmount
+  commission_amount:
+    canonical_field: commission_amount
+    canonical_entity: PAYOUT_PLATFORM_FEE
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - commission_amount
+    - seller_commission
+    - marketplace_commission
+    - referral_fee
+    - commission_fee
+    - vendor_commission
+    - commissionAmount
+    - CommissionAmount
+    - commissionamount
+    - commission-amount
+    - commission amount
+    - Commission Amount
+    - commission
+    - commission_amt
+    - commission_value
+    - commission_total
+  settlement_currency:
+    canonical_field: settlement_currency
+    canonical_entity: PAYOUT_PLATFORM_FEE
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - settlement_currency
+    - payout_currency
+    - currency
+    - settle_currency
+    - disbursement_currency
+    - settlementCurrency
+    - SettlementCurrency
+    - settlementcurrency
+    - settlement-currency
+    - settlement currency
+    - Settlement Currency
+  paid_out_at:
+    canonical_field: paid_out_at
+    canonical_entity: PAYOUT_PLATFORM_FEE
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - paid_out_at
+    - payout_date
+    - settlement_date
+    - disbursed_at
+    - seller_paid_at
+    - merchant_paid_at
+    - paidOutAt
+    - PaidOutAt
+    - paidoutat
+    - paid-out-at
+    - paid out at
+    - Paid Out At
+    - paid_out_date
+    - paid_out_datetime
+    - paid_out_time
+    - paid_outAt
+  dispute_id:
+    canonical_field: dispute_id
+    canonical_entity: DISPUTE_CHARGEBACK
+    data_type: string
+    match_priority: high
+    synonyms:
+    - dispute_id
+    - chargeback_id
+    - payment_dispute_id
+    - case_id
+    - retrieval_id
+    - fraud_claim_id
+    - disputeId
+    - DisputeId
+    - disputeid
+    - dispute-id
+    - dispute id
+    - Dispute Id
+    - dispute_key
+    - dispute_ref
+    - dispute_number
+    - dispute_no
+    - disputeRef
+  dispute_status:
+    canonical_field: dispute_status
+    canonical_entity: DISPUTE_CHARGEBACK
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - dispute_status
+    - chargeback_status
+    - case_status
+    - claim_status
+    - retrieval_status
+    - dispute_state
+    - disputeStatus
+    - DisputeStatus
+    - disputestatus
+    - dispute-status
+    - dispute status
+    - Dispute Status
+    - dispute_stage
+    - dispute_flag
+  dispute_reason:
+    canonical_field: dispute_reason
+    canonical_entity: DISPUTE_CHARGEBACK
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - dispute_reason
+    - chargeback_reason
+    - reason_code
+    - claim_reason
+    - fraud_reason
+    - dispute_category
+    - disputeReason
+    - DisputeReason
+    - disputereason
+    - dispute-reason
+    - dispute reason
+    - Dispute Reason
+  disputed_amount:
+    canonical_field: disputed_amount
+    canonical_entity: DISPUTE_CHARGEBACK
+    data_type: decimal
+    match_priority: high
+    synonyms:
+    - disputed_amount
+    - chargeback_amount
+    - claim_amount
+    - reversal_amount
+    - dispute_value
+    - disputedAmount
+    - DisputedAmount
+    - disputedamount
+    - disputed-amount
+    - disputed amount
+    - Disputed Amount
+    - disputed
+    - disputed_amt
+    - disputed_value
+    - disputed_total
+  evidence_due_at:
+    canonical_field: evidence_due_at
+    canonical_entity: DISPUTE_CHARGEBACK
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - evidence_due_at
+    - evidence_due_date
+    - respond_by
+    - response_deadline
+    - representment_due_date
+    - evidenceDueAt
+    - EvidenceDueAt
+    - evidencedueat
+    - evidence-due-at
+    - evidence due at
+    - Evidence Due At
+    - evidence_due_datetime
+    - evidence_due_time
+    - evidence_dueAt
+  resolved_at:
+    canonical_field: resolved_at
+    canonical_entity: DISPUTE_CHARGEBACK
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - resolved_at
+    - closed_at
+    - case_closed_at
+    - ticket_resolved_at
+    - dispute_resolved_at
+    - resolution_time
+    - resolvedAt
+    - ResolvedAt
+    - resolvedat
+    - resolved-at
+    - resolved at
+    - Resolved At
+    - resolved_date
+    - resolved_datetime
+    - resolved_time
+  outcome:
+    canonical_field: outcome
+    canonical_entity: DISPUTE_CHARGEBACK
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - outcome
+    - dispute_outcome
+    - chargeback_outcome
+    - case_result
+    - resolution_result
+    - won_lost
+    - Outcome
+  ticket_id:
+    canonical_field: ticket_id
+    canonical_entity: SUPPORT_TICKET
+    data_type: string
+    match_priority: high
+    synonyms:
+    - ticket_id
+    - support_ticket_id
+    - case_id
+    - helpdesk_id
+    - zendesk_ticket_id
+    - support_case_id
+    - ticketId
+    - TicketId
+    - ticketid
+    - ticket-id
+    - ticket id
+    - Ticket Id
+    - ticket_key
+    - ticket_ref
+    - ticket_number
+    - ticket_no
+    - ticketRef
+  ticket_status:
+    canonical_field: ticket_status
+    canonical_entity: SUPPORT_TICKET
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - ticket_status
+    - case_status
+    - support_status
+    - helpdesk_status
+    - ticket_state
+    - resolution_status
+    - ticketStatus
+    - TicketStatus
+    - ticketstatus
+    - ticket-status
+    - ticket status
+    - Ticket Status
+    - ticket_stage
+    - ticket_flag
+  issue_category:
+    canonical_field: issue_category
+    canonical_entity: SUPPORT_TICKET
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - issue_category
+    - case_category
+    - contact_reason
+    - ticket_type
+    - problem_type
+    - support_topic
+    - complaint_category
+    - issueCategory
+    - IssueCategory
+    - issuecategory
+    - issue-category
+    - issue category
+    - Issue Category
+  priority:
+    canonical_field: priority
+    canonical_entity: SUPPORT_TICKET
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - priority
+    - ticket_priority
+    - case_priority
+    - severity
+    - urgency
+    - sla_priority
+    - Priority
+  assigned_agent_id:
+    canonical_field: assigned_agent_id
+    canonical_entity: SUPPORT_TICKET
+    data_type: string
+    match_priority: high
+    synonyms:
+    - assigned_agent_id
+    - agent_id
+    - assignee_id
+    - support_rep_id
+    - owner_id
+    - case_owner_id
+    - assignedAgentId
+    - AssignedAgentId
+    - assignedagentid
+    - assigned-agent-id
+    - assigned agent id
+    - Assigned Agent Id
+    - assigned_agent_key
+    - assigned_agent_ref
+    - assigned_agent_number
+    - assigned_agent_no
+    - assigned_agentId
+    - assigned_agentRef
+  opened_at:
+    canonical_field: opened_at
+    canonical_entity: SUPPORT_TICKET
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - opened_at
+    - created_at
+    - ticket_created_at
+    - case_opened_at
+    - support_started_at
+    - first_contact_at
+    - openedAt
+    - OpenedAt
+    - openedat
+    - opened-at
+    - opened at
+    - Opened At
+    - opened_date
+    - opened_datetime
+    - opened_time
+  satisfaction_score:
+    canonical_field: satisfaction_score
+    canonical_entity: SUPPORT_TICKET
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - satisfaction_score
+    - csat_score
+    - ticket_csat
+    - support_rating
+    - resolution_rating
+    - customer_satisfaction
+    - satisfactionScore
+    - SatisfactionScore
+    - satisfactionscore
+    - satisfaction-score
+    - satisfaction score
+    - Satisfaction Score
+  consent_id:
+    canonical_field: consent_id
+    canonical_entity: CONSENT_MARKETING_OPT_IN
+    data_type: string
+    match_priority: high
+    synonyms:
+    - consent_id
+    - preference_id
+    - marketing_consent_id
+    - privacy_consent_id
+    - gdpr_consent_id
+    - opt_in_record_id
+    - consentId
+    - ConsentId
+    - consentid
+    - consent-id
+    - consent id
+    - Consent Id
+    - consent_key
+    - consent_ref
+    - consent_number
+    - consent_no
+    - consentRef
+  email_opt_in:
+    canonical_field: email_opt_in
+    canonical_entity: CONSENT_MARKETING_OPT_IN
+    data_type: boolean
+    match_priority: high
+    synonyms:
+    - email_opt_in
+    - email_consent
+    - accepts_marketing
+    - email_subscribed
+    - newsletter_opt_in
+    - email_marketing_consent
+    - emailOptIn
+    - EmailOptIn
+    - emailoptin
+    - email-opt-in
+    - email opt in
+    - Email Opt In
+  sms_opt_in:
+    canonical_field: sms_opt_in
+    canonical_entity: CONSENT_MARKETING_OPT_IN
+    data_type: boolean
+    match_priority: medium
+    synonyms:
+    - sms_opt_in
+    - sms_consent
+    - text_opt_in
+    - phone_marketing_consent
+    - sms_subscribed
+    - mobile_opt_in
+    - smsOptIn
+    - SmsOptIn
+    - smsoptin
+    - sms-opt-in
+    - sms opt in
+    - Sms Opt In
+  push_opt_in:
+    canonical_field: push_opt_in
+    canonical_entity: CONSENT_MARKETING_OPT_IN
+    data_type: boolean
+    match_priority: medium
+    synonyms:
+    - push_opt_in
+    - push_consent
+    - app_notification_opt_in
+    - push_subscribed
+    - notification_consent
+    - pushOptIn
+    - PushOptIn
+    - pushoptin
+    - push-opt-in
+    - push opt in
+    - Push Opt In
+  gdpr_consent_status:
+    canonical_field: gdpr_consent_status
+    canonical_entity: CONSENT_MARKETING_OPT_IN
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - gdpr_consent_status
+    - privacy_consent_status
+    - lawful_basis
+    - consent_status
+    - marketing_permission
+    - ccpa_status
+    - gdprConsentStatus
+    - GdprConsentStatus
+    - gdprconsentstatus
+    - gdpr-consent-status
+    - gdpr consent status
+    - Gdpr Consent Status
+    - gdpr_consent_state
+    - gdpr_consent_stage
+    - gdpr_consent_flag
+    - gdpr_consentStatus
+  consent_source:
+    canonical_field: consent_source
+    canonical_entity: CONSENT_MARKETING_OPT_IN
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - consent_source
+    - opt_in_source
+    - signup_source
+    - permission_source
+    - privacy_source
+    - consent_channel
+    - consentSource
+    - ConsentSource
+    - consentsource
+    - consent-source
+    - consent source
+    - Consent Source
+  consent_timestamp:
+    canonical_field: consent_timestamp
+    canonical_entity: CONSENT_MARKETING_OPT_IN
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - consent_timestamp
+    - consented_at
+    - opted_in_at
+    - permission_date
+    - consent_date
+    - accepted_at
+    - consentTimestamp
+    - ConsentTimestamp
+    - consenttimestamp
+    - consent-timestamp
+    - consent timestamp
+    - Consent Timestamp
+  consent_revoked_at:
+    canonical_field: consent_revoked_at
+    canonical_entity: CONSENT_MARKETING_OPT_IN
+    data_type: datetime
+    match_priority: medium
+    synonyms:
+    - consent_revoked_at
+    - unsubscribed_at
+    - opted_out_at
+    - revoked_at
+    - withdrawn_at
+    - suppressed_at
+    - consentRevokedAt
+    - ConsentRevokedAt
+    - consentrevokedat
+    - consent-revoked-at
+    - consent revoked at
+    - Consent Revoked At
+    - consent_revoked_date
+    - consent_revoked_datetime
+    - consent_revoked_time
+    - consent_revokedAt
+  bundle_id:
+    canonical_field: bundle_id
+    canonical_entity: BUNDLE_COMPONENT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - bundle_id
+    - kit_id
+    - box_id
+    - parent_product_id
+    - bundle_product_id
+    - assembly_id
+    - bundleId
+    - BundleId
+    - bundleid
+    - bundle-id
+    - bundle id
+    - Bundle Id
+    - bundle_key
+    - bundle_ref
+    - bundle_number
+    - bundle_no
+    - bundleRef
+  component_product_id:
+    canonical_field: component_product_id
+    canonical_entity: BUNDLE_COMPONENT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - component_product_id
+    - child_product_id
+    - component_id
+    - item_component_id
+    - kit_item_product_id
+    - bom_product_id
+    - componentProductId
+    - ComponentProductId
+    - componentproductid
+    - component-product-id
+    - component product id
+    - Component Product Id
+    - component_product_key
+    - component_product_ref
+    - component_product_number
+    - component_product_no
+    - component_productId
+    - component_productRef
+  component_variant_id:
+    canonical_field: component_variant_id
+    canonical_entity: BUNDLE_COMPONENT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - component_variant_id
+    - child_variant_id
+    - component_sku_id
+    - kit_item_variant_id
+    - bom_variant_id
+    - componentVariantId
+    - ComponentVariantId
+    - componentvariantid
+    - component-variant-id
+    - component variant id
+    - Component Variant Id
+    - component_variant_key
+    - component_variant_ref
+    - component_variant_number
+    - component_variant_no
+    - component_variantId
+    - component_variantRef
+  quantity_required:
+    canonical_field: quantity_required
+    canonical_entity: BUNDLE_COMPONENT
+    data_type: integer
+    match_priority: medium
+    synonyms:
+    - quantity_required
+    - component_quantity
+    - component_qty
+    - qty_required
+    - bundle_qty
+    - kit_quantity
+    - bom_quantity
+    - quantityRequired
+    - QuantityRequired
+    - quantityrequired
+    - quantity-required
+    - quantity required
+    - Quantity Required
+  component_role:
+    canonical_field: component_role
+    canonical_entity: BUNDLE_COMPONENT
+    data_type: string
+    match_priority: medium
+    synonyms:
+    - component_role
+    - component_type
+    - bundle_role
+    - kit_role
+    - component_category
+    - item_role
+    - componentRole
+    - ComponentRole
+    - componentrole
+    - component-role
+    - component role
+    - Component Role
+  allocation_price:
+    canonical_field: allocation_price
+    canonical_entity: BUNDLE_COMPONENT
+    data_type: decimal
+    match_priority: medium
+    synonyms:
+    - allocation_price
+    - allocated_price
+    - bundle_allocation
+    - component_price
+    - component_revenue
+    - apportioned_price
+    - allocationPrice
+    - AllocationPrice
+    - allocationprice
+    - allocation-price
+    - allocation price
+    - Allocation Price
+  is_optional:
+    canonical_field: is_optional
+    canonical_entity: BUNDLE_COMPONENT
+    data_type: boolean
+    match_priority: medium
+    synonyms:
+    - is_optional
+    - optional_component
+    - optional_item
+    - component_optional
+    - addon_flag
+    - is_addon
+    - isOptional
+    - IsOptional
+    - isoptional
+    - is-optional
+    - is optional
+    - Is Optional
+  fulfillment_id:
+    canonical_field: fulfillment_id
+    canonical_entity: FULFILLMENT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - fulfillment_id
+    - id
+    - fulfillment_no
+    - delivery_id
+    - shipment_id
+    - fulfillment_key
+  tracking_number:
+    canonical_field: tracking_number
+    canonical_entity: FULFILLMENT
+    data_type: string
+    match_priority: high
+    synonyms:
+    - tracking_number
+    - tracking_no
+    - waybill
+    - consignment_number
+    - awb
+    - tracking_id
+usage_note: Use synonyms for recognition only; do not infer that a field is globally required just because a synonym exists.

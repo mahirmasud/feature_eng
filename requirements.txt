@@ -1,0 +1,46 @@
+# AutoFE – Automated Feature Engineering Pipeline
+# ================================================
+# Core
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# Feature engineering
+featuretools>=1.28.0
+woodwork>=0.28.0
+
+# Data I/O
+pyarrow>=14.0.0
+openpyxl>=3.1.0       # Excel read/write
+xlrd>=2.0.1            # Legacy .xls
+fastparquet>=2023.10.0
+
+# Encoding detection
+chardet>=5.2.0
+
+# Advanced encoders
+category-encoders>=2.6.0
+
+# NLP
+# (TF-IDF via scikit-learn – no extra install needed)
+
+# Optional: faster dataframes
+# dask[dataframe]>=2024.1.0
+# polars>=0.20.0
+
+# Optional: gradient boosting (for feature importance)
+# lightgbm>=4.0.0
+# xgboost>=2.0.0
+
+# Optional: SHAP explainability
+# shap>=0.44.0
+
+# CLI & config
+pyyaml>=6.0.1
+
+# Logging (stdlib – no extra install)
+
+# Development / testing
+pytest>=7.4.0
+pytest-cov>=4.1.0

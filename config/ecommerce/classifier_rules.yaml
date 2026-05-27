@@ -1,0 +1,104 @@
+config:
+  roles: ["identity", "content_features", "interaction_signals", "filters", "ignore"]
+  unknown_role: "unknown"
+  weighted_role: "interaction_signals"
+  thresholds:
+    role_confidence: 0.80
+    mapping_confidence: 0.75
+  default_weight: 0.1
+
+overrides:
+  - role: ignore
+    if_field_matches: ["email", "phone", "password", "ssn", "national_id", "address"]
+    reason: "PII Security Policy"
+
+  - role: identity
+    if_schema_role: "identifier"
+    reason: "Schema explicitly marked as ID"
+
+  - role: ignore
+    if_field_starts: ["temp_", "tmp_", "debug_", "internal_"]
+    reason: "Internal technical metadata"
+
+
+schema_role_map:
+  identifier:  identity
+  measure:     interaction_signals
+  categorical: content_features
+  boolean:     filters
+  pii:         ignore
+
+scoring_rules:
+  - role: interaction_signals
+    weight: 0.95
+    condition:
+      field_contains: ["qty", "quantity", "count", "revenue", "gmv", "amount", "total", "price"]
+    description: "Explicit transactional indicators"
+
+  - role: interaction_signals
+    weight: 0.90
+    condition:
+      entity: "SESSION_BEHAVIOR"
+    description: "Raw behavioral logs"
+
+  - role: content_features
+    weight: 0.85
+    condition:
+      field_contains: ["category", "brand", "model", "type", "material", "color", "size", "description"]
+    description: "Strong product attributes"
+
+  - role: content_features
+    weight: 0.70
+    condition:
+      semantic_similarity: ["product narrative", "item summary", "marketing details"]
+    description: "Semantic product context"
+
+  - role: interaction_signals
+    weight: 0.70
+    condition:
+      semantic_similarity: ["consumer action", "user event", "conversion signal"]
+    description: "Semantic behavioral context"
+
+semantic_anchors:
+  identity:
+    - "primary key, uuid, product_id, customer_id, unique identifier"
+  content_features:
+    - "descriptive metadata, color, size, brand, material, category, specs"
+  interaction_signals:
+    - "purchase, revenue, click, view, quantity, rating, transaction"
+  filters:
+    - "status, in_stock, active, visible, published, boolean flag"
+  ignore:
+    - "technical logs, timestamps, pii, audit data"
+
+interaction_signal_weights:
+  default_weight: 0.1
+  
+  rules:
+    - weight: 1.0
+      keywords: ["purchase", "buy", "sold", "sale", "order", "conversion", "paid", "checkout_complete"]
+      description: "Direct conversion"
+    
+    - weight: 0.85
+      keywords: ["revenue", "gmv", "total_amount", "amount_paid", "invoice_total", "price"]
+      description: "Monetary value"
+    
+    - weight: 0.75
+      keywords: ["add_to_cart", "atc", "cart_add", "checkout_start", "wishlist"]
+      description: "High intent"
+    
+    - weight: 0.60
+      keywords: ["quantity", "qty", "units_sold"]
+      description: "Evaluation"
+    
+    - weight: 0.45
+      keywords: ["rating", "review_score", "star"]
+      description: "Feedback"
+    
+    - weight: 0.20
+      keywords: ["view", "click", "browse", "impression"]
+      description: "Discovery"
+    
+    - weight: -0.5
+      keywords: ["return", "refund", "cancel", "chargeback"]
+      description: "Retraction"
